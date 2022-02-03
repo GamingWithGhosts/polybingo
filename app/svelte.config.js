@@ -5,10 +5,17 @@ const config = {
 	kit: {
 		adapter: adapter(),
 
-		// Override http methods in the Todo forms
-		methodOverride: {
-			allowed: ['PATCH', 'DELETE']
-		}
+		vite: () => ({
+			resolve: {
+				alias: {
+					'@components': '/src/components'
+				}
+			},
+			server: {
+				https: true
+			},
+			envPrefix: 'CLIENT'
+		})
 	}
 };
 

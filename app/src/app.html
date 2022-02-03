@@ -1,3 +1,8 @@
+<!--
+  (c) 2022 Gaming With Ghosts
+  This code is licensed under MIT license (see LICENSE for details)
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -8,6 +13,13 @@
 		<link rel="icon" href="%svelte.assets%/favicon.png" />
 
 		<style>
+			main {
+				width: 1000px;
+				height: 100%;
+
+				margin: 10px auto;
+			}
+
 			/* CSS reset from https://www.joshwcomeau.com/css/custom-css-reset/ */
 
 			*, *::before, *::after {
@@ -54,6 +66,6 @@
 		%svelte.head%
 	</head>
 	<body>
-		<div>%svelte.body%</div>
+		<main>%svelte.body%</main>
 	</body>
 </html>
