@@ -1,0 +1,23 @@
+{
+  "name": "polybingo",
+  "version": "1.0.0",
+  "description": "PolyBingo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GamingWithGhosts/polybingo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GamingWithGhosts/polybingo/issues"
+  },
+  "homepage": "https://github.com/GamingWithGhosts/polybingo#readme",
+  "devDependencies": {
+    "hardhat": "^2.8.3"
+  }
+}
