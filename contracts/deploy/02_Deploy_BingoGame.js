@@ -2,27 +2,30 @@ let { networkConfig } = require('../helper-hardhat-config')
 
 module.exports = async ({
   getNamedAccounts,
-  deployments,
-  someArgs
+  deployments
 }) => {
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
   const chainId = await getChainId()
   let linkTokenAddress
-  let oracle
-  let additionalMessage = ""
+
   //set log level to ignore non errors
   ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR)
 
   // Only deploy for testing
   if (chainId == 31337) {
     let linkToken = await get('LinkToken')
-    let MockOracle = await get('MockOracle')
-    linkTokenAddress = linkToken.address
-    oracle = MockOracle.address
-    additionalMessage = " --linkaddress " + linkTokenAddress
 
-    const jobId = ethers.utils.toUtf8Bytes(networkConfig[chainId]['jobId'])
+    const apiJobId = ethers.utils.toUtf8Bytes(networkConfig[chainId]['jobId'])
+    const MockOracle = await get('MockOracle')
+    apiOracle = MockOracle.address
+
+    const randomnessKeyHash = networkConfig[chainId]['keyHash']
+    const VRFCoordinatorMock = await get('VRFCoordinatorMock')
+    randomnessOracle = VRFCoordinatorMock.address
+
+    linkTokenAddress = linkToken.address
+
     const fee = networkConfig[chainId]['fee']
     const networkName = networkConfig[chainId]['name']
     const gameSettings = {
@@ -33,16 +36,25 @@ module.exports = async ({
       'minSecondsBetweenSteps': 60,
       'ipfsDirectoryURI': "https://ipfs.io/something-static"
     }
-    const oracleSettings = {
-      'oracleAddress': oracle,
-      'oracleJobID': jobId,
-      'oracleFee': fee,
-      'linkTokenAddress': linkTokenAddress
+    const randomnessOracleSettings = {
+      'oracle': randomnessOracle,
+      'keyHash': randomnessKeyHash,
+      'fee': fee
+    }
+    const apiOracleSettings = {
+      'oracle': apiOracle,
+      'jobID': apiJobId,
+      'fee': fee
     }
 
     const bingoGame = await deploy('BingoGame', {
       from: deployer,
-      args: [gameSettings, oracleSettings],
+      args: [
+        gameSettings,
+        randomnessOracleSettings,
+        apiOracleSettings,
+        linkTokenAddress
+      ],
       log: true
     })
 

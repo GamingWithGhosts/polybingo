@@ -211,7 +211,7 @@ skip.if(!developmentChains.includes(network.name)).
       });
     });
 
-    describe.only('Start game', async function () {
+    describe('Start game', async function () {
       it('Transaction fails if its too early to start game', async () => {
         const transactionPromise = bingoGame.startGame();
         await expect(transactionPromise).to.be.revertedWith("Too early to start the game");
@@ -263,4 +263,65 @@ skip.if(!developmentChains.includes(network.name)).
       });
     });
 
+    describe.only('Do game step', async function () {
+      it('Transaction fails if game not in process', async () => {
+      });
+
+      it('Transaction fails if not enough time since last step', async () => {
+      });
+
+      it('Transaction fails if randomness unfulfilled yet', async () => {
+      });
+
+      it('Winners can withdraw prices', async () => {
+      });
+
+      it('Game ends after whole card is won', async () => {
+      });
+
+      it('Owner can withdraw at least 10% money after game ends', async () => {
+      });
+
+      it('Owner can withdraw all left money after game ends', async () => {
+      });
+
+      it('If game didnt end request for random number is send', async () => {
+      });
+
+      it('Random number request is fulfilled', async () => {
+      });
+    });
+
+    describe('Claim prize', async function () {
+      it('Transaction fails if prize was claimed', async () => {
+      });
+
+      it('Transaction fails if non winnig ticket', async () => {
+      });
+
+      it('Ticket owner added to claimers if can claim', async () => {
+      });
+
+      it('Can add multiple claimers', async () => {
+      });
+    });
+
+    /*
+    describe.only('Oracle operations', async function () {
+      it('Owner can withdraw link', async () => {
+        const owner = await bingoGame.owner();
+
+        const expectedLinkBalance = (
+          BigInt(await linkToken.balanceOf(owner)) +
+          BigInt(await linkToken.balanceOf(bingoGame.address))
+        ).toString()
+
+        await bingoGame.withdrawLink();
+
+        const linkBalance = await linkToken.balanceOf(owner);
+
+        expect(linkBalance).to.be.equals(expectedLinkBalance);
+      });
+    });
+    */
   });

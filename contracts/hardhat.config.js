@@ -50,13 +50,25 @@
      solidity: {
          compilers: [
              {
-                 version: "0.8.7"
+                 version: "0.8.7",
+                 optimizer: {
+                    enabled: true,
+                    runs: 20000,
+                }
              },
              {
-                 version: "0.6.6"
+                 version: "0.6.6",
+                 optimizer: {
+                    enabled: true,
+                    runs: 20000,
+                }
              },
              {
-                 version: "0.4.24"
+                 version: "0.4.24",
+                 optimizer: {
+                    enabled: true,
+                    runs: 20000,
+                }
              }
          ]
      },
