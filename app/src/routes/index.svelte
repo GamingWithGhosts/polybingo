@@ -12,6 +12,9 @@
     import History from "@components/History.svelte";
     import Tickets from "@components/Tickets.svelte";
     import Pool from "@components/Pool.svelte";
+
+
+    let historyComponent;
 </script>
 
 
@@ -21,7 +24,7 @@
         grid-template-columns: 225px 1fr 210px;
         column-gap: 45px;
 
-        height: 300px;
+        margin-block-start: 5px;
     }
 </style>
 
@@ -29,8 +32,8 @@
 <section>
     <Header />
     <div id="content">
-        <History/>
-        <Tickets/>
-        <Pool/>
+        <History bind:this={historyComponent} />
+        <Tickets />
+        <Pool />
     </div>
 </section>
