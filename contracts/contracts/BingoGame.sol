@@ -82,7 +82,7 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     uint256 public prizePool;
     uint256 private _unclaimedPrizePool;
 
-    mapping(address => uint256) private _balances;
+    mapping(address => uint256) public winnings;
     mapping(PrizeType => bool) private _wasClaimed;
     mapping(PrizeType => address[]) private _prizeClaimers;
 
@@ -153,13 +153,11 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
         _lastStepTime = block.timestamp;
     }
 
-    /* NO CODE SIZE LEFT :o
     function withdrawLink() external {
         uint256 linkLeft = LINK.balanceOf(address(this));
         bool success = LINK.transfer(owner, linkLeft);
         require(success, "LINK transfter failed");
     }
-    */
 
     /**************************** Player functions ****************************/
     function buyTicket() external payable returns (uint32 ticketID) {
@@ -195,13 +193,13 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     }
 
     function withdraw() public {
-        uint256 amount = _balances[msg.sender];
-        _balances[msg.sender] = 0;
+        uint256 amount = winnings[msg.sender];
+        winnings[msg.sender] = 0;
 
         (bool success, ) = payable(msg.sender).call{value: amount}("");
 
         if (success == false) {
-            _balances[msg.sender] = amount;
+            winnings[msg.sender] = amount;
             revert("Failed to send coin");
         }
     }
@@ -256,7 +254,7 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
             return;
         }
 
-        _wasClaimed[PrizeType.ROW_0] = true;
+        _wasClaimed[prizeType] = true;
 
         uint8 prizePercentage = 18;
         if (prizeType == PrizeType.WHOLE_CARD) {
@@ -269,11 +267,11 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
             ((prizePool * prizePercentage) / 100) / numberOfClaimers
         );
 
-        for (uint256 i = numberOfClaimers - 1; i >= 0; i--) {
-            address claimer = _prizeClaimers[prizeType][i];
+        for (uint256 i = numberOfClaimers; i > 0; i--) {
+            address claimer = _prizeClaimers[prizeType][i-1];
             _prizeClaimers[prizeType].pop();
 
-            _balances[claimer] += prizePerClaimer;
+            winnings[claimer] += prizePerClaimer;
             _unclaimedPrizePool -= prizePerClaimer;
         }
     }
@@ -285,7 +283,7 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     function _finishGame() private {
         gameState = GameState.GAME_FINISHED;
 
-        _balances[owner] += _unclaimedPrizePool;
+        winnings[owner] += _unclaimedPrizePool;
         _unclaimedPrizePool = 0;
     }
 
@@ -341,7 +339,7 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
 
     function fulfillRandomness(bytes32, uint256 randomness) internal override {
         uint8 drawnNumber = uint8((randomness % 90) + 1);
-        drawnNumbersBitmap &= (uint96(1) << drawnNumber);
+        drawnNumbersBitmap |= (uint96(1) << drawnNumber);
 
         emit NewNumberDrawn(drawnNumber);
 
