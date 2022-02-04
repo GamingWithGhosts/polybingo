@@ -10,8 +10,8 @@ app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
 app.config.update(
-    CELERY_BROKER_URL='amqp://guest@localhost',
-    CELERY_RESULT_BACKEND='rpc://guest@localhost'
+    CELERY_BROKER_URL='redis://localhost:6379',
+    CELERY_RESULT_BACKEND='redis://localhost:6379'
 )
 celery = make_celery(app)
 

@@ -4,3 +4,5 @@ imgkit==1.2.2
 tabulate==0.8.9
 requests==2.27.1
 celery==5.2.3
+redis==4.1.2
+ipfshttpclient==0.7.0
