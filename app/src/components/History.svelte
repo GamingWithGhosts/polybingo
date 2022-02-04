@@ -2,138 +2,144 @@
   (c) 2022 Gaming With Ghosts
   This code is licensed under MIT license (see LICENSE for details)
 -->
-
 <script>
-    export function addToHistory(number) {
-        console.log(number)
-    }
+	export function addToHistory(number) {
+		console.log(number);
+	}
 
-    let numbers = [5, 90];
+	let numbers = [5, 90];
 </script>
 
+<div id="history">
+	<div id="short-history">
+		<p id="recent">5</p>
+		<div id="next">
+			<p>4</p>
+			<p>3</p>
+			<p>2</p>
+			<p>1</p>
+		</div>
+	</div>
+
+	<div id="full-history">
+		<p>{`${numbers.length} / 90`}</p>
+		<ul>
+			{#each Array(90) as _, index}
+				<li class:taken={numbers.indexOf(index + 1) !== -1}>{index + 1}</li>
+			{/each}
+		</ul>
+	</div>
+</div>
 
 <style>
-    #history {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+	#history {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+	}
 
-    #short-history {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 5px;
+	#short-history {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 5px;
 
-        padding-inline: 20px;
-        padding-block: 5px;
+		padding-inline: 20px;
+		padding-block: 5px;
 
-        background-color: lightgray;
-    }
+		font-size: 72px;
+	}
 
-    #short-history #recent, #short-history #next p {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+	#short-history #recent,
+	#short-history #next p {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-        width: 45px;
-        height: 45px;
+		width: 108px;
+		height: 108px;
 
-        padding: 5px;
-        border: 10px solid green;
-        border-radius: 50%;
+		padding: 5px;
+		border: 10px solid green;
+		border-radius: 50%;
 
-        background-color: white;
-    }
+		background-color: white;
+	}
 
-    #short-history #next {
-        display: flex;
-        flex-direction: row;
+	#short-history #next {
+		display: flex;
+		flex-direction: row;
+		gap: 5px;
+		height: fit-content;
 
-        height: fit-content;
+		padding: 2px;
 
-        padding: 2px;
+		border-radius: 50px;
+	}
 
-        border-radius: 50px;
-        background-color: aquamarine;
-    }
+	#short-history #next p {
+		width: 48px;
+		height: 48px;
+		font-size: 36px;
+		border-width: 5px;
+	}
 
-    #short-history #next p {
-        width: 30px;
-        height: 30px;
+	#short-history #next p:first-child {
+		border-color: blue;
+	}
 
-        border-width: 5px;
-    }
+	#short-history #next p:nth-child(2) {
+		border-color: red;
+	}
 
-    #short-history #next p:first-child {
-        border-color: blue;
-    }
+	#short-history #next p:nth-child(4) {
+		border-color: yellow;
+	}
 
-    #short-history #next p:nth-child(2) {
-        border-color: red;
-    }
+	#short-history #next p:nth-child(4) {
+		border-color: blueviolet;
+	}
 
-    #short-history #next p:nth-child(4) {
-        border-color: yellow;
-    }
+	#full-history {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 
-    #short-history #next p:nth-child(4) {
-        border-color: blueviolet;
-    }
+		padding: 10px;
 
-    #full-history {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+		font-size: 28px;
 
-        padding: 10px;
+		background-color: rgba(209, 209, 209, 0.37);
+	}
+	#full-history > p {
+		font-size: 48px;
+		background-color: rgb(112, 112, 112);
+		padding: 0 22px;
+		color: white;
+		margin-bottom: 12px;
+		border-radius: 48px;
+	}
+	#full-history ul {
+		display: grid;
+		grid-template: repeat(9, 48px) / repeat(10, 48px);
 
-        background-color: lightgreen;
-    }
+		color: grey;
+		padding: 0;
 
-    #full-history ul {
-        display: grid;
-        grid-template: repeat(9, 20px) / repeat(10, 20px);
+		list-style: none;
+	}
 
-        color: grey;
-        font-size: 10px;
-        padding: 0;
+	#full-history ul li {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-        list-style: none;
-    }
-
-    #full-history ul li {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    #full-history ul li.taken {
-        color: white;
-
-        border-radius: 50%;
-        background-color: blue;
-    }
+	#full-history ul li.taken {
+		color: white;
+		font-weight: bold;
+		border-radius: 50%;
+		background-color: rgb(0, 0, 0);
+	}
 </style>
-
-
-<div id="history">
-    <div id="short-history">
-        <p id="recent">5</p>
-        <div id="next">
-            <p>4</p>
-            <p>3</p>
-            <p>2</p>
-            <p>1</p>
-        </div>
-    </div>
-
-    <div id="full-history">
-        <p>{`${numbers.length} / 90`}</p>
-        <ul>
-            {#each Array(90) as _, index}
-                <li class:taken={numbers.indexOf(index + 1) !== -1}>{index + 1}</li>
-            {/each}
-        </ul>
-    </div>
-</div>
