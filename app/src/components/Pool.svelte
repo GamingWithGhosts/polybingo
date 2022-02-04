@@ -2,149 +2,124 @@
   (c) 2022 Gaming With Ghosts
   This code is licensed under MIT license (see LICENSE for details)
 -->
-
 <script>
-
 </script>
 
+<div id="content">
+	<div id="header">
+		<div id="pool">
+			<div>Price pool</div>
+			<div class="info">
+				<span>100</span>
+				<img alt="" aria-hidden="true" src="matic.svg" />
+			</div>
+		</div>
+		<div id="players">
+			<div>Players</div>
+			<div class="info">
+				<img alt="" aria-hidden="true" src="matic.svg" />
+				<span>50</span>
+			</div>
+		</div>
+	</div>
+	<ul id="prizes">
+		<li>
+			<span>Housie</span>
+			<span>120</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+		<li>
+			<span>Top Line</span>
+			<span>120</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+		<li>
+			<span>Mid Line</span>
+			<span>75</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+		<li>
+			<span>Bottom Line</span>
+			<span>20</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+	</ul>
+</div>
 
 <style>
-    #content {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+	#content {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 
-        height: fit-content;
-        background-color: lightgray;
-    }
+		height: fit-content;
+		/* background-color: lightgray; */
+	}
 
-    #header {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-around;
-    }
+	#header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-around;
+	}
 
-    #chart {
-        width: 90px;
-        height: 35px;
+	#pool div:first-child,
+	#players div:first-child {
+		font-size: 24px;
+		font-weight: bold;
+		text-transform: uppercase;
+	}
+	#pool,
+	#players {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	#pool .info,
+	#players .info {
+		display: flex;
+		justify-items: center;
+		gap: 5px;
+		font-size: 22px;
+	}
 
-        border: 2px solid whitesmoke;
-        background-color: grey;
-    }
+	#pool img,
+	#players img {
+		display: inline;
+		width: 20px;
+	}
 
-    #chart .row {
-        height: 33.333%;
+	#prizes {
+		padding: 0;
+	}
 
-        border: 1px solid lightgray;
-        border-collapse: collapse;
-        background-color: grey;
-    }
+	#prizes li {
+		display: flex;
+		justify-content: space-between;
+		gap: 5px;
 
-    #chart .row.solved {
-        background-color: green;
-    }
+		padding: 14px;
 
-    #pool div:first-child, #players div:first-child {
-        font-size: 9px;
-        text-transform: uppercase;
-    }
+		font-size: 24px;
+		font-weight: bold;
 
-    #pool .info, #players .info {
-        display: flex;
-        justify-items: center;
-        gap: 5px;
-    }
+		border-top: 0;
 
-    #pool img, #players img {
-        display: inline;
-        width: 20px;
-    }
+		color: rgb(255, 255, 255);
+		background-color: #e4985a;
 
-    #prizes {
-        padding: 0;
-    }
+		border-radius: 100px;
+		margin-top: 10px;
+	}
 
-    #prizes li {
-        display: flex;
-        justify-content: space-between;
-        gap: 5px;
+	#prizes img {
+		width: 20px;
+		justify-self: flex- end;
+	}
 
-        padding: 5px;
-
-        border: 1px solid gray;
-        border-top: 0;
-
-        color: lightgray;
-        background-color: #006D71;
-    }
-
-    #prizes img {
-        width: 20px;
-    }
-
-    #prizes li:first-child {
-        justify-content: initial;
-        border-top: 1px solid grey;
-    }
-
-    #prizes li:first-child span:nth-child(2),
-    #prizes li:nth-child(2) span:first-child,
-    #prizes li:nth-child(3) span:first-child,
-    #prizes li:nth-child(4) span:first-child  {
-        flex-grow: 1;
-    }
-
-    .circle {
-        padding: 5px;
-        border-radius: 50%;
-        background-color: #004f00;
-    }
+	#prizes li:first-child span:first-child,
+	#prizes li:nth-child(2) span:first-child,
+	#prizes li:nth-child(3) span:first-child,
+	#prizes li:nth-child(4) span:first-child {
+		flex-grow: 1;
+	}
 </style>
-
-
-<div id="content">
-    <div id="header">
-        <div id="chart">
-            <div class="row solved" id="toprow"></div>
-            <div class="row solved" id="middlerow"></div>
-            <div class="row" id="bottomrow"></div>
-        </div>
-        <div id="pool">
-            <div>Price pool</div>
-            <div class="info">
-                <img alt="" aria-hidden="true" src="/pool.jpg"/>
-                <span>9p</span>
-            </div>
-        </div>
-        <div id="players">
-            <div>Players</div>
-            <div class="info">
-                <img alt="" aria-hidden="true" src="user.jpg"/>
-                <span>50</span>
-            </div>
-        </div>
-    </div>
-    <ul id="prizes">
-        <li>
-            <span>Bingo!</span>
-            <span><span class="circle">28</span></span>
-            <img src="matic.svg" alt="matic logo" />
-            <span>250</span>
-        </li>
-        <li>
-            <span>Top Line</span>
-            <img src="matic.svg" alt="matic logo" />
-            <span>120</span>
-        </li>
-        <li>
-            <span>Mid Line</span>
-            <img src="matic.svg" alt="matic logo" />
-            <span>75</span>
-        </li>
-        <li>
-            <span>Bottom Line</span>
-            <img src="matic.svg" alt="matic logo" />
-            <span>20</span>
-        </li>
-    </ul>
-</div>
