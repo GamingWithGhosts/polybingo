@@ -2,38 +2,34 @@
   (c) 2022 Gaming With Ghosts
   This code is licensed under MIT license (see LICENSE for details)
 -->
-
 <script context="module">
 	export const prerender = true;
 </script>
 
 <script>
-    import Header from "@components/Header.svelte";
-    import History from "@components/History.svelte";
-    import Tickets from "@components/Tickets.svelte";
-    import Pool from "@components/Pool.svelte";
+	import Header from '@components/Header.svelte';
+	import History from '@components/History.svelte';
+	import Tickets from '@components/Tickets.svelte';
+	import Pool from '@components/Pool.svelte';
 
-
-    let historyComponent;
+	let historyComponent;
 </script>
 
+<section>
+	<Header />
+	<div id="content">
+		<History bind:this={historyComponent} />
+		<Tickets />
+		<Pool />
+	</div>
+</section>
 
 <style>
-    #content {
-        display: grid;
-        grid-template-columns: 225px 1fr 210px;
-        column-gap: 45px;
-
-        margin-block-start: 5px;
-    }
+	#content {
+		display: grid;
+		grid-template-columns: 500px 5fr 2fr;
+		column-gap: 45px;
+		padding: 0 45px;
+		margin-block-start: 5px;
+	}
 </style>
-
-
-<section>
-    <Header />
-    <div id="content">
-        <History bind:this={historyComponent} />
-        <Tickets />
-        <Pool />
-    </div>
-</section>
