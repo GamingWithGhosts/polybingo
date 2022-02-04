@@ -1,0 +1,71 @@
+<!--
+  (c) 2022 Gaming With Ghosts
+  This code is licensed under MIT license (see LICENSE for details)
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Polybingo</title>
+		<meta name="description" content="Distributed bingo the fun way" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="%svelte.assets%/favicon.png" />
+
+		<style>
+			main {
+				width: 1000px;
+				height: 100%;
+
+				margin: 10px auto;
+			}
+
+			/* CSS reset from https://www.joshwcomeau.com/css/custom-css-reset/ */
+
+			*, *::before, *::after {
+				box-sizing: border-box;
+			}
+
+			* {
+				margin: 0;
+			}
+
+			html, body {
+				height: 100%;
+			}
+
+			body {
+				line-height: 1.5;
+				font-family: "arial", sans-serif;
+			}
+
+			img, picture, video, canvas, svg {
+				display: block;
+				max-width: 100%;
+			}
+
+			input, button, textarea, select {
+				font: inherit;
+			}
+
+			ul {
+				margin: 0;
+			}
+			p, h1, h2, h3, h4, h5, h6 {
+				overflow-wrap: break-word;
+			}
+
+			#root, #__next {
+				isolation: isolate;
+			}
+
+			#svelte {
+				position: relative;
+			}
+		</style>
+		%svelte.head%
+	</head>
+	<body>
+		<main>%svelte.body%</main>
+	</body>
+</html>
