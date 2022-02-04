@@ -30,7 +30,8 @@ module.exports = async ({
       'gameSymbol': "TST",
       'ticketPrice': "100000000000000000",
       'minSecondsBeforeGameStarts': 600, // 10 minutes
-      'minSecondsBetweenSteps': 60
+      'minSecondsBetweenSteps': 60,
+      'ipfsDirectoryURI': "https://ipfs.io/something-static"
     }
     const oracleSettings = {
       'oracleAddress': oracle,

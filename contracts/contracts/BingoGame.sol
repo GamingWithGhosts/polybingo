@@ -12,6 +12,7 @@ contract BingoGame is ERC721, ChainlinkClient {
     using Counters for Counters.Counter;
     using Chainlink for Chainlink.Request;
 
+    /*************************** Structs and enums ****************************/
     enum PrizeType {
         ROW_0,
         ROW_1,
@@ -32,6 +33,7 @@ contract BingoGame is ERC721, ChainlinkClient {
         uint256 ticketPrice; // 1 matic = 10 ** 18
         uint24  minSecondsBeforeGameStarts;
         uint16  minSecondsBetweenSteps;
+        string  ipfsDirectoryURI;
     }
 
     struct TicketGenerationOracle {
@@ -40,23 +42,33 @@ contract BingoGame is ERC721, ChainlinkClient {
         uint256 oracleFee;
         address linkTokenAddress;
     }
+    /********************************* Events *********************************/
+    event TicketSaleEnded();
+    event GameStarted();
 
+    /***************************** Public members *****************************/
     address payable public immutable owner;
     uint256 public immutable ticketPrice;
     uint256 public immutable minGameStartTime;
     uint16  public immutable minSecondsBetweenSteps;
 
     GameState public gameState = GameState.TICKET_SALE;
+
     mapping(uint32 => bytes15) public ticketIDToTicket;
 
-    Counters.Counter private _tokenIDs;
+    uint96 public drawnNumbersBitmap;
+    uint256 public prizePool;
+
+    /***************************** Private members ****************************/
+    string private _ipfsDirectoryURI;
     TicketGenerationOracle private _oracle;
+
+    Counters.Counter private _tokenIDs;
 
     mapping(bytes32 => uint32) private _requestToTicketID;
     uint32 private _unfulfilledRequestCount = 0;
 
-    // uint96 public drawnNumbersBitmap;
-
+    /**************************** Public functions ****************************/
     constructor(
         GameSettings memory settings,
         TicketGenerationOracle memory oracleSettings
@@ -66,6 +78,7 @@ contract BingoGame is ERC721, ChainlinkClient {
         ticketPrice = settings.ticketPrice;
         minGameStartTime = block.timestamp + settings.minSecondsBeforeGameStarts;
         minSecondsBetweenSteps = settings.minSecondsBetweenSteps;
+        _ipfsDirectoryURI = settings.ipfsDirectoryURI;
 
         _oracle = oracleSettings;
         if (oracleSettings.linkTokenAddress == address(0)) {
@@ -85,17 +98,41 @@ contract BingoGame is ERC721, ChainlinkClient {
         _requestTicket(_ticketID);
         _mint(msg.sender, _ticketID);
 
+        prizePool += ticketPrice;
+
         return _ticketID;
     }
 
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+
+        return string(
+            abi.encodePacked(
+                _baseURI(),"/",symbol(),"/",Strings.toString(tokenId),".json" // TODO - verifty if the right path
+            )
+        );
+    }
+
     function startGame() external {
+        require(block.timestamp >= minGameStartTime, "Too early to start the game");
+        require(gameState < GameState.GAME_STARTED, "Game already started");
+
+        if (gameState == GameState.TICKET_SALE) {
+            gameState = GameState.WAITING_FOR_TICKET_FULFILLMENT;
+            emit TicketSaleEnded();
+        }
+
+        if ((gameState == GameState.WAITING_FOR_TICKET_FULFILLMENT) &&
+            (_unfulfilledRequestCount == 0)) {
+            gameState = GameState.GAME_STARTED;
+            emit GameStarted();
+        }
         /*
             1. Verify that minSecondsBeforeGameStarts passed
             2. Stop minting
             3. Verify fullfilment
             4. Stop additional calls to the function
         */
-        gameState = GameState.GAME_STARTED;
     }
 
     function finalizeStepAndDrawNextNumber() external pure returns (uint8 nextNumber) {
@@ -105,6 +142,14 @@ contract BingoGame is ERC721, ChainlinkClient {
             3. If game ended distribute money to owner & lock function
             4. Draw new number
         */
+
+        // emit NumberDrawn
+
+    // function transfer(address payable _to, uint _amount) public {
+    //     // Note that "to" is declared as payable
+    //     (bool success, ) = _to.call{value: _amount}("");
+    //     require(success, "Failed to send Ether");
+    // }
         return 0xFF;
     }
 
@@ -117,6 +162,9 @@ contract BingoGame is ERC721, ChainlinkClient {
             2. Check if ticket wins prize.
             3. Add ticket owner to claimers.
         */
+
+        // emit PriceClaimed(claimer/tokenID/prizeType)
+
         return false;
     }
 
@@ -126,15 +174,18 @@ contract BingoGame is ERC721, ChainlinkClient {
     ) public recordChainlinkFulfillment(requestID) {
         require(_requestToTicketID[requestID] > 0, "Request was already fulfilled");
 
-        uint8 bitsToShift = 8 * (32 - 15);
-        ticketIDToTicket[_requestToTicketID[requestID]] = bytes15(ticket << bitsToShift);
+        // TODO - verify how API failures are handled
+        uint32 ticketID = _requestToTicketID[requestID];
+        uint8 bitsToShiftForArrayTrim = 8 * (32 - 15);
+        ticketIDToTicket[ticketID] = bytes15(ticket << bitsToShiftForArrayTrim);
 
         delete _requestToTicketID[requestID];
         _unfulfilledRequestCount--;
     }
 
+    /**************************** Private functions ***************************/
     function _baseURI() internal view override virtual returns (string memory) {
-        return "something ipfs bla bla bla";
+        return _ipfsDirectoryURI;
     }
 
     function _requestTicket(uint32 ticketID) private {
@@ -146,13 +197,14 @@ contract BingoGame is ERC721, ChainlinkClient {
 
         string memory getURL = string(
             abi.encodePacked(
-                " https://polybingo.com/api/v1.0/ticket?Id=",
-                symbol(),
-                "-",
-                Strings.toString(ticketID)
+                "https://polybingo.com/api/v1/", // TODO - Update API URI
+                "?gameid=",symbol(),
+                "&ticketid=",Strings.toString(ticketID)
             )
         );
+
         request.add("get", getURL);
+        request.add("path", "ticket");
 
         bytes32 requestID = sendChainlinkRequestTo(
             _oracle.oracleAddress,
@@ -164,12 +216,6 @@ contract BingoGame is ERC721, ChainlinkClient {
         _unfulfilledRequestCount++;
     }
 
-    // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
+    // TODO - function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
 
-
-    // function transfer(address payable _to, uint _amount) public {
-    //     // Note that "to" is declared as payable
-    //     (bool success, ) = _to.call{value: _amount}("");
-    //     require(success, "Failed to send Ether");
-    // }
 }

@@ -33,6 +33,12 @@ async function getContracts(deployments) {
   return { linkToken, mockOracle, bingoGame };
 }
 
+async function incTimeAndStartGame(bingoGame) {
+  await ethers.provider.send("evm_increaseTime", [700]);
+  return bingoGame.startGame();
+}
+
+
 skip.if(!developmentChains.includes(network.name)).
   describe('BingoGame Unit Tests', async function () {
     let linkToken, mockOracle, bingoGame;
@@ -70,6 +76,17 @@ skip.if(!developmentChains.includes(network.name)).
         expect(ticketPrice).to.equals(expectedTokenPrice);
       });
 
+      it('baseURI is Updated', async () => {
+        await bingoGame.buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+
+        const tokenURI = await bingoGame.tokenURI(1);
+        const expectedTokenURI = "https://ipfs.io/something-static/TST/1.json"
+
+        expect(tokenURI).to.equals(expectedTokenURI);
+      });
+
       it('minGameStartTime is set to 10min from now', async () => {
         const minGameStartTime = await bingoGame.minGameStartTime();
         const expectedMinGameStartTime = (approxDeploymentTime + 600);
@@ -86,15 +103,6 @@ skip.if(!developmentChains.includes(network.name)).
     });
 
     describe('Buy ticket', async function () {
-      it('Transaction fails with sale has ended', async () => {
-        await bingoGame.startGame();
-        const transactionPromise = bingoGame.buyTicket({
-          value: ethers.utils.parseEther("0.1")
-        });
-
-        await expect(transactionPromise).to.be.revertedWith("Ticket sale has ended");
-      });
-
       it('Transaction fails if not enough money', async () => {
         const transactionPromise = bingoGame.buyTicket({
           value: ethers.utils.parseEther("0.09")
@@ -113,6 +121,19 @@ skip.if(!developmentChains.includes(network.name)).
 
         const newBalance = await provider.getBalance(bingoGame.address);
         const addedMoney = (newBalance - oldBalance).toString();
+
+        expect(addedMoney).to.equals(ethers.utils.parseEther("0.1"));
+      });
+
+      it('Prize pool updated', async () => {
+        const oldPrizePool = await bingoGame.prizePool();
+
+        await bingoGame.buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+
+        const newPrizePool = await bingoGame.prizePool();
+        const addedMoney = (newPrizePool - oldPrizePool).toString();
 
         expect(addedMoney).to.equals(ethers.utils.parseEther("0.1"));
       });
@@ -174,12 +195,13 @@ skip.if(!developmentChains.includes(network.name)).
           _data
         ) => {
             // Mock the fulfillment of the request
-            const callbackValue = "0x0123456789ABCDEF0123456789ABCD";
-            await mockOracle.fulfillOracleRequest(requestId, numToBytes32(callbackValue));
+            const callbackData = [0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD];
+            const callbackDataBytes32 = numToBytes32(callbackData);
+            await mockOracle.fulfillOracleRequest(requestId, callbackDataBytes32);
 
             const ticket = await bingoGame.ticketIDToTicket(1);
-
-            expect(ticket).to.bignumber.equals(callbackValue)
+            const ticketBytes32 = numToBytes32(ticket);
+            expect(ticketBytes32).to.bignumber.equals(callbackDataBytes32);
             done();
         });
 
@@ -188,4 +210,57 @@ skip.if(!developmentChains.includes(network.name)).
         });
       });
     });
+
+    describe.only('Start game', async function () {
+      it('Transaction fails if its too early to start game', async () => {
+        const transactionPromise = bingoGame.startGame();
+        await expect(transactionPromise).to.be.revertedWith("Too early to start the game");
+      });
+
+      it('Buy ticket transaction fails if sale has ended', async () => {
+        await incTimeAndStartGame(bingoGame);
+        const transactionPromise = bingoGame.buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+
+        await expect(transactionPromise).to.be.revertedWith("Ticket sale has ended");
+      });
+
+      it('Transaction fails if game already started', async () => {
+        await incTimeAndStartGame(bingoGame);
+        const transactionPromise = incTimeAndStartGame(bingoGame);
+        await expect(transactionPromise).to.be.revertedWith("Game already started");
+      });
+
+      it('Unfulfilled tickets - ticket sale ends, game doesnt start', async () => {
+        await bingoGame.buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+
+        const transaction = await incTimeAndStartGame(bingoGame);
+        const receipt = await transaction.wait();
+
+        const ticketSaleEndEvent = receipt.events.find(event => event.event === 'TicketSaleEnded');
+
+        const gameState = await bingoGame.gameState();
+
+        expect(ticketSaleEndEvent).to.not.be.null;
+        expect(gameState).to.be.equals(1);
+      });
+
+      it('All tickets fulfilled - ticket sale ends, game starts', async () => {
+        const transaction = await incTimeAndStartGame(bingoGame);
+        const receipt = await transaction.wait();
+
+        const ticketSaleEndEvent = receipt.events.find(event => event.event === 'TicketSaleEnded');
+        const gameStartedEvent = receipt.events.find(event => event.event === 'GameStarted');
+
+        const gameState = await bingoGame.gameState();
+
+        expect(ticketSaleEndEvent).to.not.be.null;
+        expect(gameStartedEvent).to.not.be.null;
+        expect(gameState).to.be.equals(2);
+      });
+    });
+
   });
