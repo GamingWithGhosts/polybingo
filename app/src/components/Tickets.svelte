@@ -7,12 +7,7 @@
 
 
 	const matrix = getTicketMatrixFromArray();
-	const tickets = [
-		[...matrix.row1, ...matrix.row2, ...matrix.row3],
-		[...matrix.row1, ...matrix.row2, ...matrix.row3],
-		[...matrix.row1, ...matrix.row2, ...matrix.row3],
-		[...matrix.row1, ...matrix.row2, ...matrix.row3]
-	];
+	const tickets = [];
 
 	export let takenNumbers = [19, 74];
 	export let selectedNumbers = [];
@@ -81,6 +76,15 @@
 		flex-grow: 1;
 	}
 
+	#boards #buy-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+
+		margin-block-start: 100px;
+	}
+
 	#boards .header {
 		display: flex;
 		justify-content: flex-end;
@@ -146,6 +150,12 @@
 
 					<button>Bottom Line</button>
 				</div>
+			</div>
+		{:else}
+			<div id="buy-container">
+				<p>No tickets available</p>
+				<button>Create new game</button>
+				<button>Buy ticket</button>
 			</div>
 		{/each}
 	</div>
