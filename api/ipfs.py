@@ -1,4 +1,4 @@
-#import base64, requests, os, json, imgkit, ipfshttpclient
+import base64, os, json, imgkit, ipfshttpclient
 from tabulate import tabulate
 from prettytable import PrettyTable, ALL
 from functools import reduce
