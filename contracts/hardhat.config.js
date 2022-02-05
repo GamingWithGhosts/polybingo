@@ -1,13 +1,14 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
+require("@appliedblockchain/chainlink-plugins-fund-link")
 require("@nomiclabs/hardhat-waffle")
 require("@nomiclabs/hardhat-ethers")
 require("@nomiclabs/hardhat-truffle5")
+require('hardhat-contract-sizer');
 require("hardhat-deploy")
 require("hardhat-gas-reporter")
 require("solidity-coverage")
-require("@appliedblockchain/chainlink-plugins-fund-link")
 
 require('dotenv').config()
 
