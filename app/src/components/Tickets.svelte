@@ -25,38 +25,6 @@
 	}
 </script>
 
-<div id="content">
-	<div id="header">
-		<p>Your Tickets</p>
-	</div>
-	<div id="boards">
-		{#each tickets as ticket, boardIndex}
-			<div class="board-container">
-				<div class="board">
-					<div class="header">
-						<p>#60382</p>
-					</div>
-					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
-						{#each ticket as item}
-							<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
-								<span>{item !== 0 ? item : ''}</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
-				<div class="claim-buttons">
-					<button> Housie</button>
-					<button> Top Line</button>
-
-					<button> Middle Line</button>
-
-					<button>Bottom Line</button>
-				</div>
-			</div>
-		{/each}
-	</div>
-</div>
-
 <style>
 	#content {
 		padding: 24px;
@@ -150,3 +118,35 @@
 		background-color: green;
 	}
 </style>
+
+<div id="content">
+	<div id="header">
+		<p>Your Tickets</p>
+	</div>
+	<div id="boards">
+		{#each tickets as ticket, boardIndex}
+			<div class="board-container">
+				<div class="board">
+					<div class="header">
+						<p>#60382</p>
+					</div>
+					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
+						{#each ticket as item}
+							<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
+								<span>{item !== 0 ? item : ''}</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+				<div class="claim-buttons">
+					<button> Housie</button>
+					<button> Top Line</button>
+
+					<button> Middle Line</button>
+
+					<button>Bottom Line</button>
+				</div>
+			</div>
+		{/each}
+	</div>
+</div>

@@ -7,13 +7,6 @@
 	import Button from '@components/elements/Button.svelte';
 </script>
 
-<div id="wrapper">
-	<p>PolyBingo</p>
-
-	<Dropdown />
-	<Button />
-</div>
-
 <style>
 	#wrapper {
 		display: flex;
@@ -33,3 +26,10 @@
 		flex-grow: 1;
 	}
 </style>
+
+<div id="wrapper">
+	<p>PolyBingo</p>
+
+	<Dropdown />
+	<Button />
+</div>

@@ -15,14 +15,6 @@
 	let historyComponent;
 </script>
 
-<section>
-	<Header />
-	<div id="content">
-		<History bind:this={historyComponent} />
-		<Tickets />
-		<Pool />
-	</div>
-</section>
 
 <style>
 	#content {
@@ -33,3 +25,13 @@
 		margin-block-start: 5px;
 	}
 </style>
+
+
+<section>
+	<Header />
+	<div id="content">
+		<History bind:this={historyComponent} />
+		<Tickets />
+		<Pool />
+	</div>
+</section>

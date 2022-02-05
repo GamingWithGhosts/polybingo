@@ -10,27 +10,6 @@
 	let numbers = [5, 90];
 </script>
 
-<div id="history">
-	<div id="short-history">
-		<p id="recent">5</p>
-		<div id="next">
-			<p>4</p>
-			<p>3</p>
-			<p>2</p>
-			<p>1</p>
-		</div>
-	</div>
-
-	<div id="full-history">
-		<p>{`${numbers.length} / 90`}</p>
-		<ul>
-			{#each Array(90) as _, index}
-				<li class:taken={numbers.indexOf(index + 1) !== -1}>{index + 1}</li>
-			{/each}
-		</ul>
-	</div>
-</div>
-
 <style>
 	#history {
 		position: sticky;
@@ -149,3 +128,24 @@
 		background-color: rgb(0, 0, 0);
 	}
 </style>
+
+<div id="history">
+	<div id="short-history">
+		<p id="recent">5</p>
+		<div id="next">
+			<p>4</p>
+			<p>3</p>
+			<p>2</p>
+			<p>1</p>
+		</div>
+	</div>
+
+	<div id="full-history">
+		<p>{`${numbers.length} / 90`}</p>
+		<ul>
+			{#each Array(90) as _, index}
+				<li class:taken={numbers.indexOf(index + 1) !== -1}>{index + 1}</li>
+			{/each}
+		</ul>
+	</div>
+</div>
