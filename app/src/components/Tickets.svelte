@@ -30,17 +30,27 @@
 	</div>
 	<div id="boards">
 		{#each tickets as ticket, boardIndex}
-			<div class="board">
-				<div class="header">
-					<p>#60382</p>
+			<div class="board-container">
+				<div class="board">
+					<div class="header">
+						<p>#60382</p>
+					</div>
+					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
+						{#each ticket as item}
+							<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
+								<span>{item !== 0 ? item : ''}</span>
+							</li>
+						{/each}
+					</ul>
 				</div>
-				<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
-					{#each ticket as item}
-						<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
-							<span>{item !== 0 ? item : ''}</span>
-						</li>
-					{/each}
-				</ul>
+				<div class="claim-buttons">
+					<button> Housie</button>
+					<button> Top Line</button>
+
+					<button> Middle Line</button>
+
+					<button>Bottom Line</button>
+				</div>
 			</div>
 		{/each}
 	</div>
@@ -62,7 +72,6 @@
 
 		color: #292929;
 	}
-
 	.numbers {
 		display: grid;
 		grid-template: repeat(3, 72px) / repeat(9, 1fr);
@@ -79,8 +88,28 @@
 		background-color: #525252;
 	}
 
+	#boards .board-container {
+		display: flex;
+		align-items: flex-end;
+		gap: 10px;
+	}
+	#boards .claim-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		font-size: 24px;
+		font-weight: bold;
+		padding: 10px;
+	}
+	#boards .claim-buttons > button {
+		border: none;
+		background-color: #677969;
+		color: gold;
+		cursor: pointer;
+	}
 	#boards .board {
 		margin-block-start: 15px;
+		flex-grow: 1;
 	}
 
 	#boards .header {
