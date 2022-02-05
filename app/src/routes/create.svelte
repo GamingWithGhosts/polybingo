@@ -27,7 +27,37 @@
         justify-content: center;
 
         width: 500px;
-        margin: 0 auto;
+        margin: 100px auto auto auto;
+        gap: 10px;
+    }
+    form label{
+        font-size: 28px;
+        font-weight: bold;
+        color: gray;
+    }
+    form input{
+        border-radius: 50px;
+        padding: 8px 15px;
+        font-size: 22px;
+    }
+    form button{
+        border: 0px;
+        width: fit-content;
+        align-self: center;
+        padding: 14px 48px;
+        font-size: 24px;
+        font-weight: bold;
+        border-radius: 200px;
+    }
+    form button:first-of-type{
+        background-color: rgb(69, 243, 69);
+        color: rgb(53, 53, 53);
+
+
+    }
+    form button:last-of-type{
+        background-color:rgb(209, 93, 93);
+        color: rgb(234, 235, 231);
     }
 </style>
 
