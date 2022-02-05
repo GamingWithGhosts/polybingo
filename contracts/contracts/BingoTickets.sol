@@ -109,20 +109,15 @@ contract BingoTickets is ERC721, ChainlinkClient {
         unfulfilledRequestCount++;
     }
 
-    bytes32[] public fulfillments;
-
     function fulfillTicketRequest(
         bytes32 requestID,
         bytes32 ticket
     ) public recordChainlinkFulfillment(requestID) {
         require(_requestToTicketID[requestID] > 0, "Request was already fulfilled");
 
-        fulfillments.push(ticket);
-
         // TODO - verify how API failures are handled
         uint32 ticketID = _requestToTicketID[requestID];
-        uint8 bitsToShiftForArrayTrim = 8 * (32 - 15);
-        ticketIDToTicket[ticketID] = bytes15(ticket << bitsToShiftForArrayTrim);
+        ticketIDToTicket[ticketID] = bytes15(ticket);
 
         delete _requestToTicketID[requestID];
         unfulfilledRequestCount--;

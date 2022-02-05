@@ -11,7 +11,7 @@ skip.if(developmentChains.includes(network.name)).
 
     beforeEach(async () => {
       const BingoGameFactory = await deployments.get('BingoGameFactory');
-      const bingoGameFactory = await ethers.getContractAt(
+      bingoGameFactory = await ethers.getContractAt(
         'BingoGameFactory',
         BingoGameFactory.address
       );
@@ -48,7 +48,7 @@ skip.if(developmentChains.includes(network.name)).
 
 
     it('Should successfully make an external API request and get a result', async () => {
-      let buyTicket = false;
+      let buyTicket = true;
       if (buyTicket) {
         await bingoGame.buyTicket({
           value: ethers.utils.parseEther("0.1")
@@ -60,8 +60,8 @@ skip.if(developmentChains.includes(network.name)).
       }
 
       const unfulfilled = await bingoTickets.unfulfilledRequestCount();
-      const fulfilled = await bingoTickets.fulfillments(0);
-      const ticket = await bingoTickets.ticketIDToTicket(1);
+      const fulfilled = await bingoTickets.fulfillments(1);
+      const ticket = await bingoTickets.ticketIDToTicket(2);
       const uri = await bingoTickets.tokenURI(1);
 
       console.log("Waiting for tickets: ", unfulfilled);

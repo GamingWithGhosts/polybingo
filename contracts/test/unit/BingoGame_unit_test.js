@@ -29,8 +29,7 @@ async function getContracts(deployments) {
       'minSecondsBetweenSteps': 60,
       'ipfsDirectoryURI': "ipns://somehash"
   });
-  const rc = await tx;
-  console.log(rc);
+
   const allGames = await bingoGameFactory.getAllGames();
   const bingoGame = await hre.ethers.getContractAt("BingoGame", allGames[0]);
   const bingoTickets = await hre.ethers.getContractAt(
@@ -208,7 +207,6 @@ skip.if(!developmentChains.includes(network.name)).
         const receipt = await transaction.wait();
         const sender = receipt.from;
 
-        console.log(to, tokenID);
         const tokenOwner = await bingoTickets.ownerOf(tokenID);
 
         expect(to).to.equals(sender);
@@ -247,7 +245,7 @@ skip.if(!developmentChains.includes(network.name)).
         expect(requestId).to.not.be.null;
       });
 
-      it('Ticket request is fulfilled', (done) => {
+      it.only('Ticket request is fulfilled', (done) => {
         mockOracle.once("OracleRequest", async (
           _specId,
           _sender,
@@ -260,13 +258,17 @@ skip.if(!developmentChains.includes(network.name)).
           _data
         ) => {
             // Mock the fulfillment of the request
-            const callbackData = '0x30b142a320c1e31444a1725364c55';
+            const callbackData = '0x0b1c1e3447102b3a454a0121304e550000000000000000000000000000000000'
             const callbackDataBytes32 = numToBytes32(callbackData);
             await mockOracle.fulfillOracleRequest(requestId, callbackDataBytes32);
 
+            const expectedTicket = callbackData.substring(0,32);
+            const expectedTicketBytes32 = numToBytes32(expectedTicket);
+
             const ticket = await bingoTickets.ticketIDToTicket(1);
             const ticketBytes32 = numToBytes32(ticket);
-            expect(ticketBytes32).to.bignumber.equals(callbackDataBytes32);
+
+            expect(ticketBytes32).to.bignumber.equals(expectedTicketBytes32);
             done();
         });
 
