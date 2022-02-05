@@ -16,7 +16,7 @@ contract BingoTickets is ERC721, ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
     /********************************* Tickets ********************************/
-    uint32 public unfulfilledRequestCount = 0;
+    uint32 public unfulfilledRequestCount;
     mapping(uint32 => bytes15) public ticketIDToTicket;
     mapping(bytes32 => uint32) private _requestToTicketID;
     Counters.Counter private _tokenIDs;
@@ -26,15 +26,17 @@ contract BingoTickets is ERC721, ChainlinkClient {
     LinkTokenInterface private immutable LINK;
     string private _ipfsDirectoryURI;
     OracleStructs.API private _apiOracle;
+
     /**************************** Control functions ****************************/
     constructor(
+        address owner,
         string memory gameName,
         string memory gameSymbol,
         string memory ipfsDirectoryURI,
         address linkTokenAddress,
         OracleStructs.API memory apiOracleSettings
     ) ERC721(gameName, gameSymbol) {
-        _owner = msg.sender;
+        _owner = owner;
 
         _ipfsDirectoryURI = ipfsDirectoryURI;
 
@@ -88,9 +90,9 @@ contract BingoTickets is ERC721, ChainlinkClient {
 
         string memory getURL = string(
             abi.encodePacked(
-                "https://polybingo.com/api/v1/", // TODO - Update API URI
-                "?gameid=",symbol(),
-                "&ticketid=",Strings.toString(ticketID)
+                "https://api.polybingo.gwgplay.com/api/v1/ticket",
+                "?game_id=",symbol(),
+                "&ticket_id=",Strings.toString(ticketID)
             )
         );
 
@@ -115,8 +117,7 @@ contract BingoTickets is ERC721, ChainlinkClient {
 
         // TODO - verify how API failures are handled
         uint32 ticketID = _requestToTicketID[requestID];
-        uint8 bitsToShiftForArrayTrim = 8 * (32 - 15);
-        ticketIDToTicket[ticketID] = bytes15(ticket << bitsToShiftForArrayTrim);
+        ticketIDToTicket[ticketID] = bytes15(ticket);
 
         delete _requestToTicketID[requestID];
         unfulfilledRequestCount--;

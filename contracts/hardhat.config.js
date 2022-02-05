@@ -1,13 +1,14 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
+require("@appliedblockchain/chainlink-plugins-fund-link")
 require("@nomiclabs/hardhat-waffle")
 require("@nomiclabs/hardhat-ethers")
 require("@nomiclabs/hardhat-truffle5")
+require('hardhat-contract-sizer');
 require("hardhat-deploy")
 require("hardhat-gas-reporter")
 require("solidity-coverage")
-require("@appliedblockchain/chainlink-plugins-fund-link")
 
 require('dotenv').config()
 
@@ -26,7 +27,7 @@ module.exports = {
         mumbai: {
             url: POLYGON_TESTNET_MUMBAI_RPC_URL,
             accounts: [PRIVATE_KEY],
-            gas: 2100000,
+            gas: 10000000,
             gasPrice: 8000000000,
             saveDeployments: true,
         },

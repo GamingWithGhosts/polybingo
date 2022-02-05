@@ -15,12 +15,23 @@ async function getContractByName(deployments, name) {
 
 async function getContracts(deployments) {
   const chainId = await getChainId();
-  await deployments.fixture(['mocks', 'api'])
+  await deployments.fixture(['mocks', 'factory'])
 
   const linkToken = await getContractByName(deployments, 'LinkToken');
   const mockOracle = await getContractByName(deployments, 'MockOracle');
   const mockVRF = await getContractByName(deployments, 'VRFCoordinatorMock');
-  const bingoGame = await getContractByName(deployments, 'BingoGame');
+  const bingoGameFactory = await getContractByName(deployments, 'BingoGameFactory');
+  const tx = await bingoGameFactory.createGame({
+      'gameName': "TestGame",
+      'gameSymbol': "TST",
+      'ticketPrice': "100000000000000000",
+      'minSecondsBeforeGameStarts': 600, // 10 minutes
+      'minSecondsBetweenSteps': 60,
+      'ipfsDirectoryURI': "ipns://somehash"
+  });
+
+  const allGames = await bingoGameFactory.getAllGames();
+  const bingoGame = await hre.ethers.getContractAt("BingoGame", allGames[0]);
   const bingoTickets = await hre.ethers.getContractAt(
     "BingoTickets",
     await bingoGame.bingoTickets()
@@ -78,7 +89,10 @@ async function buyMockTicket(bingoGame, bingoTickets, mockOracle, ticketArray, a
     });
   }
   await new Promise(res => setTimeout(res, 5000));
-  await mockOracle.fulfillOracleRequest(requestId, numToBytes32(ticketArray));
+
+  const padding = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  const bytes32Array = ticketArray.concat(padding);
+  await mockOracle.fulfillOracleRequest(requestId, numToBytes32(bytes32Array));
 }
 
 skip.if(!developmentChains.includes(network.name)).
@@ -110,7 +124,7 @@ skip.if(!developmentChains.includes(network.name)).
       it('gameState is set to TICKET_SALE', async () => {
         const gameState = await bingoGame.gameState();
 
-        expect(gameState).to.equals(0);
+        expect(gameState).to.equals(1);
       });
 
       it('ticketPrice is set to 0.1Matic', async () => {
@@ -126,7 +140,7 @@ skip.if(!developmentChains.includes(network.name)).
         });
 
         const tokenURI = await bingoTickets.tokenURI(1);
-        const expectedTokenURI = "https://ipfs.io/something-static/TST/1.json"
+        const expectedTokenURI = "ipns://somehash/TST/1.json"
 
         expect(tokenURI).to.equals(expectedTokenURI);
       });
@@ -196,7 +210,6 @@ skip.if(!developmentChains.includes(network.name)).
         const receipt = await transaction.wait();
         const sender = receipt.from;
 
-        console.log(to, tokenID);
         const tokenOwner = await bingoTickets.ownerOf(tokenID);
 
         expect(to).to.equals(sender);
@@ -248,13 +261,17 @@ skip.if(!developmentChains.includes(network.name)).
           _data
         ) => {
             // Mock the fulfillment of the request
-            const callbackData = [0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD];
+            const callbackData = '0x0b1c1e3447102b3a454a0121304e550000000000000000000000000000000000'
             const callbackDataBytes32 = numToBytes32(callbackData);
             await mockOracle.fulfillOracleRequest(requestId, callbackDataBytes32);
 
+            const expectedTicket = callbackData.substring(0,32);
+            const expectedTicketBytes32 = numToBytes32(expectedTicket);
+
             const ticket = await bingoTickets.ticketIDToTicket(1);
             const ticketBytes32 = numToBytes32(ticket);
-            expect(ticketBytes32).to.bignumber.equals(callbackDataBytes32);
+
+            expect(ticketBytes32).to.bignumber.equals(expectedTicketBytes32);
             done();
         });
 
@@ -298,7 +315,7 @@ skip.if(!developmentChains.includes(network.name)).
         const gameState = await bingoGame.gameState();
 
         expect(ticketSaleEndEvent).to.not.be.null;
-        expect(gameState).to.be.equals(1);
+        expect(gameState).to.be.equals(2);
       });
 
       it('All tickets fulfilled - ticket sale ends, game starts', async () => {
@@ -312,7 +329,7 @@ skip.if(!developmentChains.includes(network.name)).
 
         expect(ticketSaleEndEvent).to.not.be.null;
         expect(gameStartedEvent).to.not.be.null;
-        expect(gameState).to.be.equals(2);
+        expect(gameState).to.be.equals(3);
       });
     });
 
@@ -536,7 +553,7 @@ skip.if(!developmentChains.includes(network.name)).
         await callStepAndFulfillNumber(bingoGame, mockVRF, 1);
 
         const gameState = await bingoGame.gameState();
-        expect(gameState).to.be.equals(3);
+        expect(gameState).to.be.equals(4);
       });
 
       it('Step transaction fails if game not in process - game finished', async () => {

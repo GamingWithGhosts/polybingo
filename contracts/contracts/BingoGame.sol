@@ -5,13 +5,14 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-import { OracleStructs } from "./OracleStructs.sol";
 import { BingoTickets } from "./BingoTickets.sol";
+import { GameStructs } from "./GameStructs.sol";
+import { OracleStructs } from "./OracleStructs.sol";
 
 import "hardhat/console.sol";
 
 contract BingoGame is VRFConsumerBase {
-    /*************************** Structs and enums ****************************/
+    /********************************* Enums **********************************/
     enum PrizeType {
         ROW_0,
         ROW_1,
@@ -20,19 +21,11 @@ contract BingoGame is VRFConsumerBase {
     }
 
     enum GameState {
+        NOT_INITIALIZED,
         TICKET_SALE,
         WAITING_FOR_TICKET_FULFILLMENT,
         GAME_IN_PROGRESS,
         GAME_FINISHED
-    }
-
-    struct GameSettings {
-        string  gameName;
-        string  gameSymbol;
-        uint256 ticketPrice; // 1 matic = 10 ** 18
-        uint24  minSecondsBeforeGameStarts;
-        uint16  minSecondsBetweenSteps;
-        string  ipfsDirectoryURI;
     }
 
     /********************************* Events *********************************/
@@ -54,9 +47,9 @@ contract BingoGame is VRFConsumerBase {
     BingoTickets public bingoTickets;
 
     /******************************* Game state *******************************/
-    GameState public gameState = GameState.TICKET_SALE;
+    GameState public gameState;
     uint96 public drawnNumbersBitmap;
-    bool private _unfulfilledRandomness = false;
+    bool private _unfulfilledRandomness;
     uint256 private _lastStepTime;
 
     /********************************* Prizes *********************************/
@@ -69,30 +62,29 @@ contract BingoGame is VRFConsumerBase {
 
     /************************* Game control functions **************************/
     constructor(
-        GameSettings memory settings,
+        address gameOwner,
+        GameStructs.GameSettings memory settings,
         OracleStructs.Randomness memory randomnessOracleSettings,
-        OracleStructs.API memory apiOracleSettings,
         address linkTokenAddress
     ) VRFConsumerBase(randomnessOracleSettings.oracle, linkTokenAddress) {
-        owner = msg.sender;
+        owner = gameOwner;
 
         ticketPrice = settings.ticketPrice;
         minGameStartTime = block.timestamp + settings.minSecondsBeforeGameStarts;
         minSecondsBetweenSteps = settings.minSecondsBetweenSteps;
 
         _randOracle = randomnessOracleSettings;
+    }
 
-        bingoTickets = new BingoTickets(
-            settings.gameName,
-            settings.gameSymbol,
-            settings.ipfsDirectoryURI,
-            linkTokenAddress,
-            apiOracleSettings
-        );
+    function setTicketsContract(address ticketsContractAddress) public {
+        require(gameState == GameState.NOT_INITIALIZED, "Must be not inited");
+        bingoTickets = BingoTickets(ticketsContractAddress);
+        gameState = GameState.TICKET_SALE;
     }
 
     function startGame() external {
         require(block.timestamp >= minGameStartTime, "Too early to start the game");
+        require(gameState != GameState.NOT_INITIALIZED, "Must be inited");
         require(gameState < GameState.GAME_IN_PROGRESS, "Game already started");
 
         if (gameState == GameState.TICKET_SALE) {
@@ -127,6 +119,7 @@ contract BingoGame is VRFConsumerBase {
     }
 
     function withdrawLink() external {
+        require(gameState != GameState.NOT_INITIALIZED, "Must be inited");
         bingoTickets.withdrawLink();
 
         uint256 linkLeft = LINK.balanceOf(address(this));
@@ -149,6 +142,7 @@ contract BingoGame is VRFConsumerBase {
         uint32 ticketID,
         PrizeType prizeType
     ) external returns (bool didClaim) {
+        require(gameState != GameState.NOT_INITIALIZED, "Must be inited");
         require(_wasClaimed[prizeType] == false, "Prize was already claimed");
 
         bytes15 ticket = bingoTickets.ticketIDToTicket(ticketID);
