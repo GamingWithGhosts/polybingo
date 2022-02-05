@@ -14,7 +14,7 @@
 	import Tickets from '@components/Tickets.svelte';
 	import Pool from '@components/Pool.svelte';
 
-	let historyComponent;
+	let takenNumbers;
 </script>
 
 
@@ -32,7 +32,7 @@
 <section>
 	<Header on:buttonClick={() => goto('/create')} on:itemSelected={(event) => console.log(event.detail)} />
 	<div id="content">
-		<History bind:this={historyComponent} />
+		<History {takenNumbers} />
 		<Tickets />
 		<Pool />
 	</div>
