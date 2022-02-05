@@ -7,6 +7,10 @@
 	import Button from '@components/elements/Button.svelte';
 
 	export let hasButton = true;
+	export let hasMenu = true;
+
+	export let menuLabels;
+	export let buttonLabel;
 </script>
 
 <style>
@@ -32,9 +36,11 @@
 <div id="wrapper">
 	<p>PolyBingo</p>
 
-	<Dropdown />
+	{#if (hasMenu)}
+		<Dropdown on:itemSelected labels="{menuLabels}"  />
+	{/if}
 
 	{#if hasButton}
-		<Button on:buttonClick />
+		<Button on:buttonClick label="{buttonLabel}" />
 	{/if}
 </div>

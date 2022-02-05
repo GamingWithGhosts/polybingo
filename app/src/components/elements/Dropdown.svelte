@@ -3,6 +3,15 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 
+<script>
+    import { createEventDispatcher } from "svelte";
+
+    export let labels = ['empty'];
+
+    const dispatch = createEventDispatcher();
+</script>
+
+
 <style>
 	.select-box {
 		position: relative;
@@ -109,43 +118,22 @@
 	}
 </style>
 
-<div class="select-box">
+
+<div class="select-box" on:change={(event) => dispatch('itemSelected', event.target.value)}>
 	<div class="select-box__current" tabindex="1">
-		<div class="select-box__value">
-			<input
-					class="select-box__input"
-					type="radio"
-					id="0"
-					value="1"
-					name="game"
-					checked="checked"
-			/>
-			<p class="select-box__input-text">Game 123</p>
-		</div>
-		<div class="select-box__value">
-			<input class="select-box__input" type="radio" id="1" value="2" name="game" />
-			<p class="select-box__input-text">Game 234</p>
-		</div>
-		<div class="select-box__value">
-			<input class="select-box__input" type="radio" id="2" value="3" name="game" />
-			<p class="select-box__input-text">Game 345</p>
-		</div>
-		<img
-				class="select-box__icon"
-				src="https://cdn.onlinewebfonts.com/svg/img_295694.svg"
-				alt="Arrow Icon"
-				aria-hidden="true"
-		/>
+        {#each labels as label, index}
+            <div class="select-box__value">
+                <input class="select-box__input" type="radio"
+                       id="{index}" value="{index + 1}" name="game" checked="checked" />
+                <p class="select-box__input-text">{label}</p>
+            </div>
+        {/each}
+		<img class="select-box__icon"
+             src="https://cdn.onlinewebfonts.com/svg/img_295694.svg" alt="Arrow Icon" aria-hidden="true" />
 	</div>
 	<ul class="select-box__list">
-		<li>
-			<label class="select-box__option" for="0">Game 123</label>
-		</li>
-		<li>
-			<label class="select-box__option" for="1">Game 234</label>
-		</li>
-		<li>
-			<label class="select-box__option" for="2">Game 345</label>
-		</li>
+        {#each labels as label, index}
+            <li><label class="select-box__option" for="{index}">{label}</label></li>
+        {/each}
 	</ul>
 </div>

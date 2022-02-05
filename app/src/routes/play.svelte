@@ -30,7 +30,7 @@
 
 
 <section>
-	<Header on:buttonClick={() => goto('/create')} />
+	<Header on:buttonClick={() => goto('/create')} on:itemSelected={(event) => console.log(event.detail)} />
 	<div id="content">
 		<History bind:this={historyComponent} />
 		<Tickets />
