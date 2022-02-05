@@ -160,7 +160,7 @@ def insert_from_columns_to_rows(column: List[Number], ticket: List[Row], row_num
 
 
 def tambola_ticket(number_of_tickets):
-    tickets = [] 
+    tickets = []
     for ticket in range(number_of_tickets):
         ticket = generate_ticket()
         tickets.append(ticket.get_formated_ticket())
@@ -168,8 +168,6 @@ def tambola_ticket(number_of_tickets):
 
 
 def encoded_hex_ticket(f_ticket):
-    encoded = 0
-    for i, n in enumerate(f_ticket):        
-        encoded += (n << ((14-i)*8))
-        result = hex(encoded)[2:]
+    char_list = [chr(num) for num in f_ticket]
+    result = "".join(char_list)
     return result
