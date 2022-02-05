@@ -1,9 +1,12 @@
 #!/bin/sh
-export C_FORCE_ROOT=true
-export FLASK_APP=app
 
-echo "Starting redis..."
-redis &
-echo "Starting celery worker and API backend...."
-celery -A app.celery worker -l INFO & \
-    flask run
+#Stop previously runner docker instances
+docker stop polybingo-api ipfs
+docker rm polybingo-api ipfs
+
+#Build Docker
+docker build -t polybingo-api .
+
+#Start IPFS & API Docker
+docker run --name ipfs -p 4001:4001 -p 5001:5001 -p 8080:8080 -d ipfs/go-ipfs:v0.7.0 && \
+docker run --name polybingo-api --add-host=host.docker.internal:host-gateway --network="host" -p 5000:5000 -v /root/tickets:/flaskapp/tickets polybingo-api

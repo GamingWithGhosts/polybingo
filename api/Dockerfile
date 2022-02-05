@@ -1,17 +1,14 @@
-
-FROM python:3.9-alpine
+FROM python:3.9
 
 WORKDIR /flaskapp
 COPY requirements.txt .
 
-RUN apk add bash
-RUN apk update && \
-    apk add --no-cache \
-        --virtual .build-deps \
-        gcc linux-headers musl-dev xvfb \
-        openssl-dev cargo rust redis && \
+RUN apt update && \
+        apt install gcc xvfb redis-server wkhtmltopdf -y && \
     pip install -r requirements.txt && \
-    rm -rf /root/.cargo && \
-    apk del .build-deps
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/lib/{apt,dpkg,cache,log}/
+
 COPY . .
-CMD sh start.sh
+#ENTRYPOINT [ "python3" ]
+CMD sh entrypoint.sh
