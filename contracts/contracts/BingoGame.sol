@@ -21,6 +21,7 @@ contract BingoGame is VRFConsumerBase {
     }
 
     enum GameState {
+        NOT_INITIALIZED,
         TICKET_SALE,
         WAITING_FOR_TICKET_FULFILLMENT,
         GAME_IN_PROGRESS,
@@ -46,7 +47,7 @@ contract BingoGame is VRFConsumerBase {
     BingoTickets public bingoTickets;
 
     /******************************* Game state *******************************/
-    GameState public gameState = GameState.TICKET_SALE;
+    GameState public gameState;
     uint96 public drawnNumbersBitmap;
     bool private _unfulfilledRandomness;
     uint256 private _lastStepTime;
@@ -75,12 +76,15 @@ contract BingoGame is VRFConsumerBase {
         _randOracle = randomnessOracleSettings;
     }
 
-    function setTicketsContract(address ticketsContractAddress) public { // TODO - lock function and use it for init
+    function setTicketsContract(address ticketsContractAddress) public {
+        require(gameState == GameState.NOT_INITIALIZED, "Must be not inited");
         bingoTickets = BingoTickets(ticketsContractAddress);
+        gameState = GameState.TICKET_SALE;
     }
 
     function startGame() external {
         require(block.timestamp >= minGameStartTime, "Too early to start the game");
+        require(gameState != GameState.NOT_INITIALIZED, "Must be inited");
         require(gameState < GameState.GAME_IN_PROGRESS, "Game already started");
 
         if (gameState == GameState.TICKET_SALE) {
@@ -115,6 +119,7 @@ contract BingoGame is VRFConsumerBase {
     }
 
     function withdrawLink() external {
+        require(gameState != GameState.NOT_INITIALIZED, "Must be inited");
         bingoTickets.withdrawLink();
 
         uint256 linkLeft = LINK.balanceOf(address(this));
@@ -137,6 +142,7 @@ contract BingoGame is VRFConsumerBase {
         uint32 ticketID,
         PrizeType prizeType
     ) external returns (bool didClaim) {
+        require(gameState != GameState.NOT_INITIALIZED, "Must be inited");
         require(_wasClaimed[prizeType] == false, "Prize was already claimed");
 
         bytes15 ticket = bingoTickets.ticketIDToTicket(ticketID);

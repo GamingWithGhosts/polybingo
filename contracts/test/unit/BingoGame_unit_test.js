@@ -89,7 +89,10 @@ async function buyMockTicket(bingoGame, bingoTickets, mockOracle, ticketArray, a
     });
   }
   await new Promise(res => setTimeout(res, 5000));
-  await mockOracle.fulfillOracleRequest(requestId, numToBytes32(ticketArray));
+
+  const padding = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  const bytes32Array = ticketArray.concat(padding);
+  await mockOracle.fulfillOracleRequest(requestId, numToBytes32(bytes32Array));
 }
 
 skip.if(!developmentChains.includes(network.name)).
@@ -121,7 +124,7 @@ skip.if(!developmentChains.includes(network.name)).
       it('gameState is set to TICKET_SALE', async () => {
         const gameState = await bingoGame.gameState();
 
-        expect(gameState).to.equals(0);
+        expect(gameState).to.equals(1);
       });
 
       it('ticketPrice is set to 0.1Matic', async () => {
@@ -245,7 +248,7 @@ skip.if(!developmentChains.includes(network.name)).
         expect(requestId).to.not.be.null;
       });
 
-      it.only('Ticket request is fulfilled', (done) => {
+      it('Ticket request is fulfilled', (done) => {
         mockOracle.once("OracleRequest", async (
           _specId,
           _sender,
@@ -312,7 +315,7 @@ skip.if(!developmentChains.includes(network.name)).
         const gameState = await bingoGame.gameState();
 
         expect(ticketSaleEndEvent).to.not.be.null;
-        expect(gameState).to.be.equals(1);
+        expect(gameState).to.be.equals(2);
       });
 
       it('All tickets fulfilled - ticket sale ends, game starts', async () => {
@@ -326,7 +329,7 @@ skip.if(!developmentChains.includes(network.name)).
 
         expect(ticketSaleEndEvent).to.not.be.null;
         expect(gameStartedEvent).to.not.be.null;
-        expect(gameState).to.be.equals(2);
+        expect(gameState).to.be.equals(3);
       });
     });
 
@@ -550,7 +553,7 @@ skip.if(!developmentChains.includes(network.name)).
         await callStepAndFulfillNumber(bingoGame, mockVRF, 1);
 
         const gameState = await bingoGame.gameState();
-        expect(gameState).to.be.equals(3);
+        expect(gameState).to.be.equals(4);
       });
 
       it('Step transaction fails if game not in process - game finished', async () => {
