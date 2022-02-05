@@ -24,12 +24,16 @@ module.exports = async ({
     //Try Auto-fund APIConsumer contract with LINK
     const BingoGame = await deployments.get('BingoGame')
     const bingoGame = await ethers.getContractAt('BingoGame', BingoGame.address)
+    const bingoTokens = await bingoGame.bingoTokens();
 
-    if (await autoFundCheck(bingoGame.address, networkName, linkTokenAddress, additionalMessage)) {
-      await hre.run("fund-link", { contract: bingoGame.address, linkaddress: linkTokenAddress })
-    } else {
-      log("Then run BingoGame contract with following command:")
-      log("npx hardhat request-data --contract " + bingoGame.address + " --network " + networkName)
+    const contractsToFund = [bingoGame, bingoTokens];
+    for (contract of contractsToFund) {
+      if (await autoFundCheck(contract.address, networkName, linkTokenAddress, additionalMessage)) {
+        await hre.run("fund-link", { contract: contract.address, linkaddress: linkTokenAddress })
+      } else {
+        log("Then run contract with following command:")
+        log("npx hardhat request-data --contract " + contract.address + " --network " + networkName)
+      }
     }
     log("----------------------------------------------------")
   }
