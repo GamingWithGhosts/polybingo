@@ -3,10 +3,9 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	import { goto } from "$app/navigation";
+	import { goto } from '$app/navigation';
 
-	import { getTicketMatrixFromArray } from "$lib/utils.js";
-
+	import { getTicketMatrixFromArray } from '$lib/utils.js';
 
 	const matrix = getTicketMatrixFromArray();
 	const tickets = [];
@@ -83,10 +82,24 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 10px;
-
 		margin-block-start: 100px;
 	}
 
+	#boards #buy-container p {
+		font-weight: bold;
+		font-size: 36px;
+		color: gray;
+	}
+
+	#boards #buy-container button {
+		padding: 10px 20px;
+
+		cursor: pointer;
+		font-size: x-large;
+		font-weight: 500;
+		border: none;
+		border-radius: 100px;
+	}
 	#boards .header {
 		display: flex;
 		justify-content: flex-end;
