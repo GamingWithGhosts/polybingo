@@ -1,9 +1,17 @@
-<button>New Game</button>
-
 <!--
   (c) 2022 Gaming With Ghosts
   This code is licensed under MIT license (see LICENSE for details)
 -->
+
+<script>
+    import { createEventDispatcher } from 'svelte';
+
+    export let label = 'New Game';
+
+    const dispatch = createEventDispatcher();
+</script>
+
+
 <style>
 	button {
 		position: relative;
@@ -22,3 +30,7 @@
 		padding: 15px;
 	}
 </style>
+
+
+<button on:click={() => dispatch('buttonClick')}>{label}</button>
+

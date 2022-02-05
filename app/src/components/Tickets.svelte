@@ -3,6 +3,8 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
+	import { goto } from "$app/navigation";
+
 	import { getTicketMatrixFromArray } from "$lib/utils.js";
 
 
@@ -154,7 +156,7 @@
 		{:else}
 			<div id="buy-container">
 				<p>No tickets available</p>
-				<button>Create new game</button>
+				<button on:click={() => goto('/create')}>Create new game</button>
 				<button>Buy ticket</button>
 			</div>
 		{/each}

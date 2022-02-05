@@ -5,6 +5,8 @@
 <script>
 	import Dropdown from '@components/elements/Dropdown.svelte';
 	import Button from '@components/elements/Button.svelte';
+
+	export let hasButton = true;
 </script>
 
 <style>
@@ -31,5 +33,8 @@
 	<p>PolyBingo</p>
 
 	<Dropdown />
-	<Button />
+
+	{#if hasButton}
+		<Button on:buttonClick />
+	{/if}
 </div>

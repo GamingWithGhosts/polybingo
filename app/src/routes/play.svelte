@@ -7,6 +7,8 @@
 </script>
 
 <script>
+	import { goto } from "$app/navigation";
+
 	import Header from '@components/Header.svelte';
 	import History from '@components/History.svelte';
 	import Tickets from '@components/Tickets.svelte';
@@ -28,7 +30,7 @@
 
 
 <section>
-	<Header />
+	<Header on:buttonClick={() => goto('/create')} />
 	<div id="content">
 		<History bind:this={historyComponent} />
 		<Tickets />
