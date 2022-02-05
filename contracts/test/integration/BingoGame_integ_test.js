@@ -61,14 +61,12 @@ skip.if(developmentChains.includes(network.name)).
 
       const unfulfilled = await bingoTickets.unfulfilledRequestCount();
       const fulfilled = await bingoTickets.fulfillments(0);
-      // const ticket = await bingoTickets.ticketIDToTicket(1);
-      // const uri = await bingoTickets.tokenURI(1);
+      const ticket = await bingoTickets.ticketIDToTicket(1);
+      const uri = await bingoTickets.tokenURI(1);
 
       console.log("Waiting for tickets: ", unfulfilled);
       console.log("1st fulfilled: ", fulfilled);
-      // console.log("API gave dobby a ticket: ", ticket);
-      // console.log("Ticket URI: ", uri);
-
-      // expect(ticket).to.not.be.null;
+      console.log("API gave dobby a ticket: ", ticket);
+      console.log("Ticket URI: ", uri);
     });
   });
