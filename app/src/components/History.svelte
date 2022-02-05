@@ -33,6 +33,8 @@
 
 <style>
 	#history {
+		position: sticky;
+		top: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -40,6 +42,8 @@
 	}
 
 	#short-history {
+		position: sticky;
+		top: 20px;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -102,6 +106,8 @@
 	}
 
 	#full-history {
+		position: sticky;
+		top: 170px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;

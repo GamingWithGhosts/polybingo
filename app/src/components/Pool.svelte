@@ -48,6 +48,8 @@
 
 <style>
 	#content {
+		position: sticky;
+		top: 100px;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
