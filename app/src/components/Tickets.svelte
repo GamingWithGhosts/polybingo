@@ -3,9 +3,10 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	import { GetTicketMatrixFromArray } from '/src/utils/GetTicketMatrixFromArray';
+	import { getTicketMatrixFromArray } from "$lib/utils.js";
 
-	const matrix = GetTicketMatrixFromArray();
+
+	const matrix = getTicketMatrixFromArray();
 	const tickets = [
 		[...matrix.row1, ...matrix.row2, ...matrix.row3],
 		[...matrix.row1, ...matrix.row2, ...matrix.row3],
@@ -140,7 +141,7 @@
 
 	.board .numbers .taken span {
 		font-size: 32px;
-		font-weight: 10px;
+		/*font-weight: 10px;*/
 		padding: 5px 10px;
 		border-radius: 45px;
 		text-align: center;
