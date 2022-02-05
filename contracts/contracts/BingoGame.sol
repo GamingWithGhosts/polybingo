@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+import { OracleStructs } from "./OracleStructs.sol";
+import { BingoTickets } from "./BingoTickets.sol";
+
 import "hardhat/console.sol";
 
-contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
-    using Counters for Counters.Counter;
-    using Chainlink for Chainlink.Request;
-
+contract BingoGame is VRFConsumerBase {
     /*************************** Structs and enums ****************************/
     enum PrizeType {
         ROW_0,
@@ -37,18 +35,6 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
         string  ipfsDirectoryURI;
     }
 
-    struct TicketGenerationOracle {
-        address oracle;
-        bytes32 jobID;
-        uint256 fee;
-    }
-
-    struct RandomnessOracle {
-        address oracle;
-        bytes32 keyHash;
-        uint256 fee;
-    }
-
     /********************************* Events *********************************/
     event TicketSaleEnded();
     event GameStarted();
@@ -62,15 +48,10 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     uint256 public immutable minGameStartTime;
     uint16  public immutable minSecondsBetweenSteps;
 
-    string private _ipfsDirectoryURI;
-    TicketGenerationOracle private _apiOracle;
-    RandomnessOracle private _randOracle;
+    OracleStructs.Randomness private _randOracle;
 
     /********************************* Tickets ********************************/
-    mapping(uint32 => bytes15) public ticketIDToTicket;
-    mapping(bytes32 => uint32) private _requestToTicketID;
-    Counters.Counter private _tokenIDs;
-    uint32 private _unfulfilledRequestCount = 0;
+    BingoTickets public bingoTickets;
 
     /******************************* Game state *******************************/
     GameState public gameState = GameState.TICKET_SALE;
@@ -89,33 +70,25 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     /************************* Game control functions **************************/
     constructor(
         GameSettings memory settings,
-        RandomnessOracle memory randomnessOracleSettings,
-        TicketGenerationOracle memory apiOracleSettings,
+        OracleStructs.Randomness memory randomnessOracleSettings,
+        OracleStructs.API memory apiOracleSettings,
         address linkTokenAddress
-    )
-        ERC721(
-            settings.gameName,
-            settings.gameSymbol
-        )
-        VRFConsumerBase(
-            randomnessOracleSettings.oracle,
-            linkTokenAddress
-        )
-    {
+    ) VRFConsumerBase(randomnessOracleSettings.oracle, linkTokenAddress) {
         owner = msg.sender;
 
         ticketPrice = settings.ticketPrice;
         minGameStartTime = block.timestamp + settings.minSecondsBeforeGameStarts;
         minSecondsBetweenSteps = settings.minSecondsBetweenSteps;
-        _ipfsDirectoryURI = settings.ipfsDirectoryURI;
 
         _randOracle = randomnessOracleSettings;
-        _apiOracle = apiOracleSettings;
-        if (linkTokenAddress == address(0)) {
-            setPublicChainlinkToken();
-        } else {
-            setChainlinkToken(linkTokenAddress);
-        }
+
+        bingoTickets = new BingoTickets(
+            settings.gameName,
+            settings.gameSymbol,
+            settings.ipfsDirectoryURI,
+            linkTokenAddress,
+            apiOracleSettings
+        );
     }
 
     function startGame() external {
@@ -128,7 +101,7 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
         }
 
         if ((gameState == GameState.WAITING_FOR_TICKET_FULFILLMENT) &&
-            (_unfulfilledRequestCount == 0)) {
+            (bingoTickets.unfulfilledRequestCount() == 0)) {
             gameState = GameState.GAME_IN_PROGRESS;
             emit GameStarted();
         }
@@ -154,6 +127,8 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     }
 
     function withdrawLink() external {
+        bingoTickets.withdrawLink();
+
         uint256 linkLeft = LINK.balanceOf(address(this));
         bool success = LINK.transfer(owner, linkLeft);
         require(success, "LINK transfter failed");
@@ -164,16 +139,10 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
         require(gameState == GameState.TICKET_SALE, "Ticket sale has ended");
         require(msg.value >= ticketPrice, "Not enough coin for ticket");
 
-        _tokenIDs.increment();
-        uint32 _ticketID = uint32(_tokenIDs.current());
-
-        _requestTicket(_ticketID);
-        _mint(msg.sender, _ticketID);
-
         prizePool += ticketPrice;
         _unclaimedPrizePool += ticketPrice;
 
-        return _ticketID;
+        return bingoTickets.mintTicket(msg.sender);
     }
 
     function claimPrize(
@@ -182,10 +151,10 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     ) external returns (bool didClaim) {
         require(_wasClaimed[prizeType] == false, "Prize was already claimed");
 
-        bytes15 ticket = ticketIDToTicket[ticketID];
+        bytes15 ticket = bingoTickets.ticketIDToTicket(ticketID);
         require(_isWinningTicket(ticket, prizeType) == true, "Non winning ticket");
 
-        address claimer = ownerOf(ticketID);
+        address claimer = bingoTickets.ownerOf(ticketID);
         _prizeClaimers[prizeType].push(claimer);
 
         emit PrizeClaimed(claimer, ticketID, prizeType);
@@ -288,49 +257,6 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
     }
 
     /**************************** Oracle functions ****************************/
-    function _requestTicket(uint32 ticketID) private {
-        Chainlink.Request memory request = buildChainlinkRequest(
-            _apiOracle.jobID,
-            address(this),
-            this.fulfillTicketRequest.selector
-        );
-
-        string memory getURL = string(
-            abi.encodePacked(
-                "https://polybingo.com/api/v1/", // TODO - Update API URI
-                "?gameid=",symbol(),
-                "&ticketid=",Strings.toString(ticketID)
-            )
-        );
-
-        request.add("get", getURL);
-        request.add("path", "ticket");
-
-        bytes32 requestID = sendChainlinkRequestTo(
-            _apiOracle.oracle,
-            request,
-            _apiOracle.fee
-        );
-
-        _requestToTicketID[requestID] = ticketID;
-        _unfulfilledRequestCount++;
-    }
-
-    function fulfillTicketRequest(
-        bytes32 requestID,
-        bytes32 ticket
-    ) public recordChainlinkFulfillment(requestID) {
-        require(_requestToTicketID[requestID] > 0, "Request was already fulfilled");
-
-        // TODO - verify how API failures are handled
-        uint32 ticketID = _requestToTicketID[requestID];
-        uint8 bitsToShiftForArrayTrim = 8 * (32 - 15);
-        ticketIDToTicket[ticketID] = bytes15(ticket << bitsToShiftForArrayTrim);
-
-        delete _requestToTicketID[requestID];
-        _unfulfilledRequestCount--;
-    }
-
     function _requestRandomNumber() private {
         require(LINK.balanceOf(address(this)) >= _randOracle.fee, "Not enough LINK");
         _unfulfilledRandomness = true;
@@ -344,20 +270,5 @@ contract BingoGame is ERC721, ChainlinkClient, VRFConsumerBase {
         emit NewNumberDrawn(drawnNumber);
 
         _unfulfilledRandomness = false;
-    }
-
-    /********************* NFT functions functions ********************/
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-
-        return string(
-            abi.encodePacked(
-                _baseURI(),"/",symbol(),"/",Strings.toString(tokenId),".json" // TODO - verifty if the right path
-            )
-        );
-    }
-
-    function _baseURI() internal view override virtual returns (string memory) {
-        return _ipfsDirectoryURI;
     }
 }

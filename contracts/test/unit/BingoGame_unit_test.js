@@ -19,19 +19,26 @@ async function getContracts(deployments) {
 
   const linkToken = await getContractByName(deployments, 'LinkToken');
   const mockOracle = await getContractByName(deployments, 'MockOracle');
-  const bingoGame = await getContractByName(deployments, 'BingoGame');
   const mockVRF = await getContractByName(deployments, 'VRFCoordinatorMock');
+  const bingoGame = await getContractByName(deployments, 'BingoGame');
+  const bingoTickets = await hre.ethers.getContractAt(
+    "BingoTickets",
+    await bingoGame.bingoTickets()
+  );
 
   const networkName = networkConfig[chainId]['name']
 
   linkTokenAddress = linkToken.address
   additionalMessage = " --linkaddress " + linkTokenAddress
 
-  if (await autoFundCheck(bingoGame.address, networkName, linkTokenAddress, additionalMessage)) {
-    await hre.run("fund-link", { contract: bingoGame.address, linkaddress: linkTokenAddress })
+  const contractsToFund = [bingoGame, bingoTickets];
+  for (contract of contractsToFund) {
+    if (await autoFundCheck(contract.address, networkName, linkTokenAddress, additionalMessage)) {
+      await hre.run("fund-link", { contract: contract.address, linkaddress: linkTokenAddress })
+    }
   }
 
-  return { linkToken, mockOracle, mockVRF, bingoGame };
+  return { linkToken, mockOracle, mockVRF, bingoGame, bingoTickets };
 }
 
 async function incTimeAndStartGame(bingoGame) {
@@ -55,27 +62,28 @@ async function callStepAndFulfillNumbers(bingoGame, mockVRF, numberList) {
   }
 }
 
-async function buyMockTicket(bingoGame, mockOracle, ticketArray, account=null) {
-  let transaction;
+async function buyMockTicket(bingoGame, bingoTickets, mockOracle, ticketArray, account=null) {
+  let requestId;
+  bingoTickets.on("ChainlinkRequested", (_id) => {
+    requestId = _id;
+  });
+
   if (account) {
-    transaction = await bingoGame.connect(account).buyTicket({
+    await bingoGame.connect(account).buyTicket({
       value: ethers.utils.parseEther("0.1")
     });
   } else {
-    transaction = await bingoGame.buyTicket({
+    await bingoGame.buyTicket({
       value: ethers.utils.parseEther("0.1")
     });
   }
-  const receipt = await transaction.wait();
-  const request = receipt.events.find(event => event.event === 'ChainlinkRequested');
-
-  const requestId = request.args.id;
+  await new Promise(res => setTimeout(res, 5000));
   await mockOracle.fulfillOracleRequest(requestId, numToBytes32(ticketArray));
 }
 
 skip.if(!developmentChains.includes(network.name)).
   describe('BingoGame Unit Tests', async function () {
-    let linkToken, mockOracle, mockVRF, bingoGame;
+    let linkToken, mockOracle, mockVRF, bingoGame, bingoTickets;
     const approxDeploymentTime = parseInt(Date.now() / 1000);
 
     beforeEach(async () => {
@@ -84,6 +92,7 @@ skip.if(!developmentChains.includes(network.name)).
       mockOracle = contracts.mockOracle;
       mockVRF = contracts.mockVRF
       bingoGame = contracts.bingoGame;
+      bingoTickets = contracts.bingoTickets;
     });
 
     afterEach(async () => {
@@ -116,7 +125,7 @@ skip.if(!developmentChains.includes(network.name)).
           value: ethers.utils.parseEther("0.1")
         });
 
-        const tokenURI = await bingoGame.tokenURI(1);
+        const tokenURI = await bingoTickets.tokenURI(1);
         const expectedTokenURI = "https://ipfs.io/something-static/TST/1.json"
 
         expect(tokenURI).to.equals(expectedTokenURI);
@@ -174,47 +183,56 @@ skip.if(!developmentChains.includes(network.name)).
       });
 
       it('Token owned by buyer', async () => {
+        let to, tokenID;
+        bingoTickets.on("Transfer", (_from,_to,_tokenID) => {
+          to = _to;
+          tokenID = _tokenID;
+        });
         const transaction = await bingoGame.buyTicket({
           value: ethers.utils.parseEther("0.1")
         });
-        const receipt = await transaction.wait();
+        await new Promise(res => setTimeout(res, 5000));
 
+        const receipt = await transaction.wait();
         const sender = receipt.from;
-        const event = receipt.events.find(event => event.event === 'Transfer');
-        const [_from, to, tokenID] = event.args;
-        const tokenOwner = await bingoGame.ownerOf(tokenID);
+
+        console.log(to, tokenID);
+        const tokenOwner = await bingoTickets.ownerOf(tokenID);
 
         expect(to).to.equals(sender);
         expect(tokenOwner).to.equals(sender);
       });
 
       it('TokenID incremented', async () => {
-        const transaction1 = await bingoGame.buyTicket({
+        let tokenIDs = [];
+        bingoTickets.on("Transfer", (_from,_to,_tokenID) => {
+          tokenIDs.push(_tokenID);
+        });
+
+        await bingoGame.buyTicket({
           value: ethers.utils.parseEther("0.1")
         });
-        const receipt1 = await transaction1.wait();
-        const event1 = receipt1.events.find(event => event.event === 'Transfer');
-        const [_from1, _to1, tokenID1] = event1.args;
 
-        const transaction2 = await bingoGame.buyTicket({
+        await bingoGame.buyTicket({
           value: ethers.utils.parseEther("0.1")
         });
-        const receipt2 = await transaction2.wait();
-        const event2 = receipt2.events.find(event => event.event === 'Transfer');
-        const [_from2, _to2, tokenID2] = event2.args;
+        await new Promise(res => setTimeout(res, 5000));
 
-        expect(tokenID2 - tokenID1).to.equals(1);
+        expect(tokenIDs[1] - tokenIDs[0]).to.equals(1);
       });
 
       it('API request for ticket is sent', async () => {
-          const transaction = await bingoGame.buyTicket({
-            value: ethers.utils.parseEther("0.1")
-          });
-          const receipt = await transaction.wait();
-          const event = receipt.events.find(event => event.event === 'ChainlinkRequested');
-          const requestId = event.topics[1];
+        let requestId;
+        bingoTickets.on("ChainlinkRequested", (_id) => {
+          requestId = _id;
+        });
 
-          expect(requestId).to.not.be.null;
+        await bingoGame.buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+        await new Promise(res => setTimeout(res, 5000));
+
+        expect(requestId).to.not.be.null;
       });
 
       it('Ticket request is fulfilled', (done) => {
@@ -234,7 +252,7 @@ skip.if(!developmentChains.includes(network.name)).
             const callbackDataBytes32 = numToBytes32(callbackData);
             await mockOracle.fulfillOracleRequest(requestId, callbackDataBytes32);
 
-            const ticket = await bingoGame.ticketIDToTicket(1);
+            const ticket = await bingoTickets.ticketIDToTicket(1);
             const ticketBytes32 = numToBytes32(ticket);
             expect(ticketBytes32).to.bignumber.equals(callbackDataBytes32);
             done();
@@ -332,76 +350,82 @@ skip.if(!developmentChains.includes(network.name)).
         await expect(transactionPromise).to.be.revertedWith("Waiting for previous random number");
       });
 
-      it('Claim prize transaction fails if non winnig ticket - row0', async () => {
-        await buyMockTicket(
-          bingoGame,
-          mockOracle,
-          [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
-        );
-        await incTimeAndStartGame(bingoGame);
+      describe('Claim prize transaction fails if non winnig ticket', async function () {
+        it('Row0', async () => {
+          await buyMockTicket(
+            bingoGame,
+            bingoTickets,
+            mockOracle,
+            [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
+          );
+          await incTimeAndStartGame(bingoGame);
 
-        await callStepAndFulfillNumbers(
-          bingoGame,
-          mockVRF,
-          [1, 25, 33, 57, 90]
-        );
+          await callStepAndFulfillNumbers(
+            bingoGame,
+            mockVRF,
+            [1, 25, 33, 57, 90]
+          );
 
-        let transactionPromise = bingoGame.claimPrize(1, 0);
-        await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
-      });
+          let transactionPromise = bingoGame.claimPrize(1, 0);
+          await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
+        });
 
-      it('Claim prize transaction fails if non winnig ticket - row1', async () => {
-        await buyMockTicket(
-          bingoGame,
-          mockOracle,
-          [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
-        );
-        await incTimeAndStartGame(bingoGame);
+        it('Row1', async () => {
+          await buyMockTicket(
+            bingoGame,
+            bingoTickets,
+            mockOracle,
+            [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
+          );
+          await incTimeAndStartGame(bingoGame);
 
-        await callStepAndFulfillNumbers(
-          bingoGame,
-          mockVRF,
-          [17, 37, 58]
-        );
+          await callStepAndFulfillNumbers(
+            bingoGame,
+            mockVRF,
+            [17, 37, 58]
+          );
 
-        let transactionPromise = bingoGame.claimPrize(1, 1);
-        await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
-      });
+          let transactionPromise = bingoGame.claimPrize(1, 1);
+          await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
+        });
 
-      it('Claim prize transaction fails if non winnig ticket - row2', async () => {
-        await buyMockTicket(
-          bingoGame,
-          mockOracle,
-          [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
-        );
-        await incTimeAndStartGame(bingoGame);
+        it('Row2', async () => {
+          await buyMockTicket(
+            bingoGame,
+            bingoTickets,
+            mockOracle,
+            [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
+          );
+          await incTimeAndStartGame(bingoGame);
 
-        await callStepAndFulfillNumbers(
-          bingoGame,
-          mockVRF,
-          [4, 46, 65]
-        );
+          await callStepAndFulfillNumbers(
+            bingoGame,
+            mockVRF,
+            [4, 46, 65]
+          );
 
-        let transactionPromise = bingoGame.claimPrize(1, 2);
-        await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
-      });
+          let transactionPromise = bingoGame.claimPrize(1, 2);
+          await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
+        });
 
-      it('Claim prize transaction fails if non winnig ticket - whole card', async () => {
-        await buyMockTicket(
-          bingoGame,
-          mockOracle,
-          [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
-        );
-        await incTimeAndStartGame(bingoGame);
+        it('Whole card', async () => {
+          await buyMockTicket(
+            bingoGame,
+            bingoTickets,
+            mockOracle,
+            [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
+          );
+          await incTimeAndStartGame(bingoGame);
 
-        await callStepAndFulfillNumbers(
-          bingoGame,
-          mockVRF,
-          [1,25,33,57,77,17,58,78,81,4,28,46,65,85]
-        );
+          await callStepAndFulfillNumbers(
+            bingoGame,
+            mockVRF,
+            [1,25,33,57,77,17,58,78,81,4,28,46,65,85]
+          );
 
-        let transactionPromise = bingoGame.claimPrize(1, 3);
-        await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
+          let transactionPromise = bingoGame.claimPrize(1, 3);
+          await expect(transactionPromise).to.be.revertedWith("Non winning ticket");
+        });
       });
 
       it('Winners prizes set as winnings', async () => {
@@ -409,12 +433,14 @@ skip.if(!developmentChains.includes(network.name)).
 
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85],
           user1
         );
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85],
           user2
@@ -447,6 +473,7 @@ skip.if(!developmentChains.includes(network.name)).
         const [ _owner, user1 ] = await ethers.getSigners();
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85],
           user1
@@ -468,11 +495,13 @@ skip.if(!developmentChains.includes(network.name)).
       it('Transaction fails if prize was claimed', async () => {
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
         );
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
         );
@@ -492,6 +521,7 @@ skip.if(!developmentChains.includes(network.name)).
       it('Game ends after whole card is won', async () => {
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
         );
@@ -512,6 +542,7 @@ skip.if(!developmentChains.includes(network.name)).
       it('Step transaction fails if game not in process - game finished', async () => {
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85]
         );
@@ -533,6 +564,7 @@ skip.if(!developmentChains.includes(network.name)).
         const [ _, user1 ] = await ethers.getSigners();
         await buyMockTicket(
           bingoGame,
+          bingoTickets,
           mockOracle,
           [1,25,33,57,77,17,37,58,78,81,4,28,46,65,85],
           user1
@@ -563,7 +595,8 @@ skip.if(!developmentChains.includes(network.name)).
 
         const expectedLinkBalance = (
           BigInt(await linkToken.balanceOf(owner)) +
-          BigInt(await linkToken.balanceOf(bingoGame.address))
+          BigInt(await linkToken.balanceOf(bingoGame.address)) +
+          BigInt(await linkToken.balanceOf(bingoTickets.address))
         ).toString()
 
         await bingoGame.withdrawLink();

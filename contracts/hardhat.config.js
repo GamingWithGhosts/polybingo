@@ -20,10 +20,8 @@ module.exports = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
-            allowUnlimitedContractSize: true
         },
         localhost: {
-            allowUnlimitedContractSize: true
         },
         mumbai: {
             url: POLYGON_TESTNET_MUMBAI_RPC_URL,
