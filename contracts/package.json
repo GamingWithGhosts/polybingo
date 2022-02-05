@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "test": "hardhat test test/unit/BingoGame_unit_test.js",
-    "test-integration": "hardhat test test/integration/APIConsumer_int_test.js --network localhost"
+    "test-integ": "hardhat test test/integration/BingoGame_integ_test.js --network mumbai"
   },
   "license": "MIT",
   "devDependencies": {

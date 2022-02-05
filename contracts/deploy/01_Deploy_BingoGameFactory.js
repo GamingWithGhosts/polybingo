@@ -41,12 +41,24 @@ module.exports = async ({
     'fee': fee
   };
 
+  const bingoGameDeployer = await deploy('BingoGameDeployer', {
+    from: deployer,
+    args: [],
+    log: true
+  });
+  const bingoTicketsDeployer = await deploy('BingoTicketsDeployer', {
+    from: deployer,
+    args: [],
+    log: true
+  });
   const bingoGameFactory = await deploy('BingoGameFactory', {
     from: deployer,
     args: [
+      bingoGameDeployer.address,
+      bingoTicketsDeployer.address,
+      linkTokenAddress,
       randomnessOracleSettings,
       apiOracleSettings,
-      linkTokenAddress
     ],
     log: true
   });
@@ -56,4 +68,4 @@ module.exports = async ({
   log("----------------------------------------------------");
 }
 
-module.exports.tags = ['all', 'api', 'main']
+module.exports.tags = ['all', 'factory', 'main']

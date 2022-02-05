@@ -5,13 +5,14 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-import { OracleStructs } from "./OracleStructs.sol";
 import { BingoTickets } from "./BingoTickets.sol";
+import { GameStructs } from "./GameStructs.sol";
+import { OracleStructs } from "./OracleStructs.sol";
 
 import "hardhat/console.sol";
 
 contract BingoGame is VRFConsumerBase {
-    /*************************** Structs and enums ****************************/
+    /********************************* Enums **********************************/
     enum PrizeType {
         ROW_0,
         ROW_1,
@@ -24,15 +25,6 @@ contract BingoGame is VRFConsumerBase {
         WAITING_FOR_TICKET_FULFILLMENT,
         GAME_IN_PROGRESS,
         GAME_FINISHED
-    }
-
-    struct GameSettings {
-        string  gameName;
-        string  gameSymbol;
-        uint256 ticketPrice; // 1 matic = 10 ** 18
-        uint24  minSecondsBeforeGameStarts;
-        uint16  minSecondsBetweenSteps;
-        string  ipfsDirectoryURI;
     }
 
     /********************************* Events *********************************/
@@ -56,7 +48,7 @@ contract BingoGame is VRFConsumerBase {
     /******************************* Game state *******************************/
     GameState public gameState = GameState.TICKET_SALE;
     uint96 public drawnNumbersBitmap;
-    bool private _unfulfilledRandomness = false;
+    bool private _unfulfilledRandomness;
     uint256 private _lastStepTime;
 
     /********************************* Prizes *********************************/
@@ -69,26 +61,22 @@ contract BingoGame is VRFConsumerBase {
 
     /************************* Game control functions **************************/
     constructor(
-        GameSettings memory settings,
+        address gameOwner,
+        GameStructs.GameSettings memory settings,
         OracleStructs.Randomness memory randomnessOracleSettings,
-        OracleStructs.API memory apiOracleSettings,
         address linkTokenAddress
     ) VRFConsumerBase(randomnessOracleSettings.oracle, linkTokenAddress) {
-        owner = msg.sender;
+        owner = gameOwner;
 
         ticketPrice = settings.ticketPrice;
         minGameStartTime = block.timestamp + settings.minSecondsBeforeGameStarts;
         minSecondsBetweenSteps = settings.minSecondsBetweenSteps;
 
         _randOracle = randomnessOracleSettings;
+    }
 
-        bingoTickets = new BingoTickets(
-            settings.gameName,
-            settings.gameSymbol,
-            settings.ipfsDirectoryURI,
-            linkTokenAddress,
-            apiOracleSettings
-        );
+    function setTicketsContract(address ticketsContractAddress) public { // TODO - lock function and use it for init
+        bingoTickets = BingoTickets(ticketsContractAddress);
     }
 
     function startGame() external {

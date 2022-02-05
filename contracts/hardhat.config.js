@@ -27,7 +27,7 @@ module.exports = {
         mumbai: {
             url: POLYGON_TESTNET_MUMBAI_RPC_URL,
             accounts: [PRIVATE_KEY],
-            gas: 2100000,
+            gas: 10000000,
             gasPrice: 8000000000,
             saveDeployments: true,
         },

@@ -15,12 +15,24 @@ async function getContractByName(deployments, name) {
 
 async function getContracts(deployments) {
   const chainId = await getChainId();
-  await deployments.fixture(['mocks', 'api'])
+  await deployments.fixture(['mocks', 'factory'])
 
   const linkToken = await getContractByName(deployments, 'LinkToken');
   const mockOracle = await getContractByName(deployments, 'MockOracle');
   const mockVRF = await getContractByName(deployments, 'VRFCoordinatorMock');
-  const bingoGame = await getContractByName(deployments, 'BingoGame');
+  const bingoGameFactory = await getContractByName(deployments, 'BingoGameFactory');
+  const tx = await bingoGameFactory.createGame({
+      'gameName': "TestGame",
+      'gameSymbol': "TST",
+      'ticketPrice': "100000000000000000",
+      'minSecondsBeforeGameStarts': 600, // 10 minutes
+      'minSecondsBetweenSteps': 60,
+      'ipfsDirectoryURI': "ipns://somehash"
+  });
+  const rc = await tx;
+  console.log(rc);
+  const allGames = await bingoGameFactory.getAllGames();
+  const bingoGame = await hre.ethers.getContractAt("BingoGame", allGames[0]);
   const bingoTickets = await hre.ethers.getContractAt(
     "BingoTickets",
     await bingoGame.bingoTickets()
@@ -126,7 +138,7 @@ skip.if(!developmentChains.includes(network.name)).
         });
 
         const tokenURI = await bingoTickets.tokenURI(1);
-        const expectedTokenURI = "https://ipfs.io/something-static/TST/1.json"
+        const expectedTokenURI = "ipns://somehash/TST/1.json"
 
         expect(tokenURI).to.equals(expectedTokenURI);
       });
@@ -248,7 +260,7 @@ skip.if(!developmentChains.includes(network.name)).
           _data
         ) => {
             // Mock the fulfillment of the request
-            const callbackData = [0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF,0x01,0x23,0x45,0x67,0x89,0xAB,0xCD];
+            const callbackData = '0x30b142a320c1e31444a1725364c55';
             const callbackDataBytes32 = numToBytes32(callbackData);
             await mockOracle.fulfillOracleRequest(requestId, callbackDataBytes32);
 
