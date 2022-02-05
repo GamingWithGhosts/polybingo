@@ -167,4 +167,9 @@ def tambola_ticket(number_of_tickets):
     return reduce(lambda x, y: x+y, tickets)
 
 
-
+def encoded_hex_ticket(f_ticket):
+    encoded = 0
+    for i, n in enumerate(f_ticket):        
+        encoded += (n << ((14-i)*8))
+        result = hex(encoded)[2:]
+    return result

@@ -32,6 +32,7 @@ def optimized_ticket(ticket):
 
 def flat_ticket(o_ticket):
     flattend_ticket = reduce(lambda x, y: x+y, o_ticket)
+    print(f'flat ticket {flattend_ticket}')
     return flattend_ticket
 
 def create_metadata(f_ticket, game_id):

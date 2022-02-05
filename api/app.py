@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from ticket import tambola_ticket
+from ticket import tambola_ticket, encoded_hex_ticket
 from ipfs import optimized_ticket, flat_ticket, ipfsmgmt, optimized_ticket, create_metadata, create_ticket_image
 from flask import Flask
 from celeryconfig import make_celery
@@ -25,8 +25,9 @@ def home():
         ticket = tambola_ticket(1)
         o_ticket = optimized_ticket(ticket)
         f_ticket = flat_ticket(o_ticket)
+        encoded_ticket = encoded_hex_ticket(f_ticket)
         save_ticket.delay(ticket, game_id, ticket_id)
-        return jsonify({'ticket': f_ticket})
+        return jsonify({'ticket': encoded_ticket})
 
 
 @celery.task()
