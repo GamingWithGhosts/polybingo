@@ -50,6 +50,8 @@
 		const transaction = await $moralis.executeFunction(options);
 		const receipt = await transaction.wait();
 		console.log(transaction, receipt)
+
+		findTickets();
 	}
 
 	async function findTickets() {
