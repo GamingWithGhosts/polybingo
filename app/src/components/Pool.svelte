@@ -24,13 +24,13 @@
 
 			const gameContract = new ethers.Contract(import.meta.env.CLIENT_GAME_CONTRACT, BINGOGAME, provider);
 			gameContract.on('PrizeClaimed', (claimer, ticketID, prizeType) => {
-				if (prizeType === 'WHOLE_CARD') {
+				if (prizeType === 3) {
 					isFullClaimed = true;
-				} else if (prizeType === 'ROW_0') {
+				} else if (prizeType === 0) {
 					isTopClaimed = true;
-				} else if (prizeType === 'ROW_1') {
+				} else if (prizeType === 1) {
 					isMiddleClaimed = true;
-				} else if (prizeType === 'ROW_2') {
+				} else if (prizeType === 2) {
 					isBottomClaimed = true;
 				}
 			})
