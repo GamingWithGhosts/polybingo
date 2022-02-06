@@ -29,7 +29,7 @@
 				} else if (prizeType === 'ROW_0') {
 					isTopClaimed = true;
 				} else if (prizeType === 'ROW_1') {
-					isMIddleClaimed = true;
+					isMiddleClaimed = true;
 				} else if (prizeType === 'ROW_2') {
 					isBottomClaimed = true;
 				}
