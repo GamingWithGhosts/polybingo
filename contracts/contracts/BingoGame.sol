@@ -256,8 +256,18 @@ contract BingoGame is VRFConsumerBase {
     }
 
     function fulfillRandomness(bytes32, uint256 randomness) internal override {
-        uint8 drawnNumber = uint8((randomness % 90) + 1);
-        drawnNumbersBitmap |= (uint96(1) << drawnNumber);
+        uint8 drawnNumber;
+        for (uint8 i = 0; i < (256/8); i++) {
+            drawnNumber = uint8((randomness % 90) + 1);
+
+            uint96 oldDrawnNumbersBitmap = drawnNumbersBitmap;
+            drawnNumbersBitmap |= (uint96(1) << drawnNumber);
+            if (drawnNumbersBitmap != oldDrawnNumbersBitmap) {
+                break;
+            }
+
+            randomness = randomness >> 8;
+        }
 
         emit NewNumberDrawn(drawnNumber);
 
