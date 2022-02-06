@@ -22,10 +22,14 @@ const networkConfig = {
         linkToken: '0x326C977E6efc84E512bB9C30f76E30c160eD06FB',
         keyHash: '0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4',
         vrfCoordinator: '0x8C7382F9D8f56b33781fE506E897a4F1e2d17255',
-        oracle: '0x0bDDCD124709aCBf9BB3F824EbC61C87019888bb',
-        jobId: 'c6a006e4f4844754a6524445acde84a0',
-        vrfFee: '1000000000000000',
-        apiFee: '10000000000000000',
+        // // Mumbai Testnet - Matrixed.link
+        // oracle: '0x0bDDCD124709aCBf9BB3F824EbC61C87019888bb',
+        // jobId: 'c6a006e4f4844754a6524445acde84a0',
+        // LinkRiver
+        oracle: '0xb33D8A4e62236eA91F3a8fD7ab15A95B9B7eEc7D',
+        jobId: '92bc82fdc9824a71a2721cb5f00b8e35',
+        vrfFee: '100000000000000000',
+        apiFee: '100000000000000000',
         fundAmount: "1000000000000000000",
         keepersUpdateInterval: "30"
     },

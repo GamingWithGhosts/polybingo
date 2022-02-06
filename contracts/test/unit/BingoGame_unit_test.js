@@ -623,4 +623,43 @@ skip.if(!developmentChains.includes(network.name)).
         expect(linkBalance).to.be.equals(expectedLinkBalance);
       });
     });
+
+    describe('Getting all tickets per owner', async function () {
+      it('Buyer is set as owner', async () => {
+        const [ _owner, user1 ] = await ethers.getSigners();
+
+        await bingoGame.connect(user1).buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+        await bingoGame.connect(user1).buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+
+        const allTickets = await bingoTickets.getAllTicketIDs(user1.address);
+
+        expect(allTickets).to.have.members([1,2]);
+      });
+
+      it('Owner is change on ticket transfer', async () => {
+        const [ _owner, user1, user2] = await ethers.getSigners();
+
+        await bingoGame.connect(user1).buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+        await bingoGame.connect(user1).buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+        await bingoGame.connect(user2).buyTicket({
+          value: ethers.utils.parseEther("0.1")
+        });
+
+        await bingoTickets.connect(user1).transferFrom(user1.address, user2.address, 1);
+
+        const allTicketsUser1 = await bingoTickets.getAllTicketIDs(user1.address);
+        const allTicketsUser2 = await bingoTickets.getAllTicketIDs(user2.address);
+
+        expect(allTicketsUser1).to.not.have.members([1]);
+        expect(allTicketsUser2).to.have.members([1,3]);
+      });
+    });
   });

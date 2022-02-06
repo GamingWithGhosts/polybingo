@@ -19,6 +19,7 @@ contract BingoTickets is ERC721, ChainlinkClient {
     uint32 public unfulfilledRequestCount;
     mapping(uint32 => bytes15) public ticketIDToTicket;
     mapping(bytes32 => uint32) private _requestToTicketID;
+    mapping(address => uint32[]) private _ownerToAllTicketIDs;
     Counters.Counter private _tokenIDs;
 
     /*************************** Contract settings *****************************/
@@ -53,17 +54,23 @@ contract BingoTickets is ERC721, ChainlinkClient {
 
     function mintTicket(address to) external returns (uint32 ticketID) {
         require(msg.sender == _owner, "Minting can only be done through BingoTickets");
+        require(_tokenIDs.current() < 0xFFFFFFFF, "No tickets left");
 
         _tokenIDs.increment();
         uint32 _ticketID = uint32(_tokenIDs.current());
 
         _requestTicket(_ticketID);
         _mint(to, _ticketID);
+        _ownerToAllTicketIDs[to].push(_ticketID);
 
         return _ticketID;
     }
 
     /****************************** User functions ****************************/
+    function getAllTicketIDs(address owner) public view returns (uint32[] memory ids) {
+        return _ownerToAllTicketIDs[owner];
+    }
+
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
@@ -76,6 +83,28 @@ contract BingoTickets is ERC721, ChainlinkClient {
 
     function _baseURI() internal view override virtual returns (string memory) {
         return _ipfsDirectoryURI;
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenID
+    ) internal override virtual {
+        super._transfer(from, to, tokenID);
+
+        _removeFromArray(_ownerToAllTicketIDs[from], uint32(tokenID));
+        _ownerToAllTicketIDs[to].push(uint32(tokenID));
+    }
+
+    function _removeFromArray(uint32[] storage array, uint32 value) private {
+        uint32 arrayLenth = uint32(array.length);
+        for (uint32 i = 0; i < arrayLenth; i++) {
+            if (array[i] == value) {
+                array[i] = array[arrayLenth-1];
+                array.pop();
+                break;
+            }
+        }
     }
 
     /**************************** Oracle functions ****************************/

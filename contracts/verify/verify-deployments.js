@@ -11,16 +11,16 @@ async function main() {
   vrfSettings = {
     "oracle": "0x8C7382F9D8f56b33781fE506E897a4F1e2d17255",
     "keyHash": "0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4",
-    "fee": "1000000000000000"
+    "fee": "10000000000000010"
   }
   apiSettings = {
     "oracle": "0x0bDDCD124709aCBf9BB3F824EbC61C87019888bb",
     "jobID": ethers.utils.toUtf8Bytes("c6a006e4f4844754a6524445acde84a0"),
-    "fee": "10000000000000000"
+    "fee": "10000000000000010"
   }
   linkAddress = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"
 
-  bingoGameAddress = "0x846DA56f1E4aD7bEbc4FB5a19db4411f36e2E91b"
+  bingoGameAddress = "0xb923119d1C7ADEaE11e4bfd94097C268E97Af609"
   await hre.run("verify:verify", {
     address: bingoGameAddress,
     constructorArguments: [
@@ -31,7 +31,7 @@ async function main() {
     ],
   });
 
-  bingoTicketsAddress = "0x128a72512609C48ED884FE3Aeb55c6E19eD7E35b"
+  bingoTicketsAddress = "0x3cc94aD18aE584c4ae1Fa67500486B7C63C557f6"
   await hre.run("verify:verify", {
     address: bingoTicketsAddress,
     constructorArguments: [
@@ -40,13 +40,13 @@ async function main() {
       gameSettings.gameSymbol,
       gameSettings.ipfsDirectoryURI,
       linkAddress,
-      vrfSettings
+      apiSettings
     ],
   });
 
-  bingoGameDeployer = "0x09E6ea4CC0c09c74E5fb905859da7568b5881c65"
-  bingoTicketsDeployer = "0xD9b5845649334c252738D64ffEF9427a6D1C1d65"
-  bingoGameFactoryAddress = "0xbe97F10e8b2Db69aC9e3CD5CbBeb8c5e708Cb0AD"
+  bingoGameDeployer = "0x28Da3b982987cF06359BAbF5Ef1cf20749905140"
+  bingoTicketsDeployer = "0xdA7459c02CE2D85b93b389EE0400f42432189bC9"
+  bingoGameFactoryAddress = "0xd4318EcdcDfdf7c5a7f21dc5507F0639339Ae6De"
   await hre.run("verify:verify", {
     address: bingoGameFactoryAddress,
     constructorArguments: [
