@@ -15,7 +15,14 @@
 	export let selectedNumbers = [];
 
 
-	let tickets = [];
+	const ROW_TYPE = Object.freeze({
+		top: 0,
+		middle: 1,
+		bottom: 2,
+		full: 3
+	})
+
+	let tickets = {};
 	let isFullHouse = false, isFullClaimed = false;
 	let isTopLine = false, isTopClaimed = false;
 	let isMiddleLine = false, isMiddleClaimed = false;
@@ -38,6 +45,7 @@
 			selectedNumbers = [...selectedNumbers, selected];
 		}
 
+/*
 		const row1Found = tickets[0].row1.filter(x => selectedNumbers.indexOf(x) !== -1);
 		const row2Found = tickets[0].row2.filter(x => selectedNumbers.indexOf(x) !== -1);
 		const row3Found = tickets[0].row3.filter(x => selectedNumbers.indexOf(x) !== -1);
@@ -50,6 +58,7 @@
 		} else if (row3Found.length === 5) {
 			isBottomLine = true;
 		}
+*/
 	}
 
 	async function handleBuyTicket() {
@@ -73,7 +82,7 @@
 	}
 
 	async function findTickets() {
-		tickets = [];
+		tickets = {};
 
 		$moralis.executeFunction({
 			contractAddress: import.meta.env.CLIENT_TICKETS_CONTRACT,
@@ -96,7 +105,7 @@
 						}
 					});
 
-					setTicketsFromCard(card);
+					setTicketsFromCard(card, id);
 				});
 
 				return cards;
@@ -106,13 +115,15 @@
 			});
 	}
 
-	async function handleClaimPrize(type) {
+	async function handleClaimPrize(ticketId, type) {
+
+
 		const isClaimed = await $moralis.executeFunction({
 			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
 			functionName:'claimPrize',
 			abi: BINGOGAME,
 			params: {
-				ticketID: 3,
+				ticketID: ticketId,
 				prizeType: type
 			}
 		})
@@ -120,7 +131,7 @@
 		// TODO: Handle if prize is claimed
 	}
 
-	function setTicketsFromCard(card) {
+	function setTicketsFromCard(card, ticketId) {
 		let numbersArray = [];
 		let hexString = card.toString(16);
 
@@ -130,8 +141,7 @@
 		}
 
 		const matrix = getTicketMatrixFromArray(numbersArray);
-		tickets.push(matrix);
-		tickets = tickets;
+		tickets[ticketId] = (matrix);
 	}
 
 	async function getNumberHistory() {
@@ -290,7 +300,7 @@
 		<p>Your Tickets</p>
 	</div>
 	<div id="boards">
-		{#each tickets as ticket, boardIndex}
+		{#each Object.entries(tickets) as [id, ticket], boardIndex}
 			<div class="board-container">
 				<div class="board">
 					<div class="header">
@@ -311,20 +321,20 @@
 				</div>
 				<div class="claim-buttons">
 					<button
-							on:click={() => handleClaimPrize('WHOLE_CARD')}
+							on:click={() => handleClaimPrize(id, ROW_TYPE.full)}
 							data-ticketId="">
 						Housie
 					</button>
 					<button
-							on:click={() => handleClaimPrize('ROW_0')}>
+							on:click={() => handleClaimPrize(id, ROW_TYPE.top)}>
 						Top Line
 					</button>
 					<button
-							on:click={() => handleClaimPrize('ROW_1')}>
+							on:click={() => handleClaimPrize(id, ROW_TYPE.middle)}>
 						Middle Line
 					</button>
 					<button
-							on:click={() => handleClaimPrize('ROW_2')}>
+							on:click={() => handleClaimPrize(id, ROW_TYPE.bottom)}>
 						Bottom Line
 					</button>
 				</div>
