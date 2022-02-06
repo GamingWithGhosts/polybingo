@@ -3,33 +3,9 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	export function addToHistory(number) {
-		console.log(number);
-	}
-
-	let numbers = [5, 90];
+	export let takenNumbers = [];
 </script>
 
-<div id="history">
-	<div id="short-history">
-		<p id="recent">5</p>
-		<div id="next">
-			<p>4</p>
-			<p>3</p>
-			<p>2</p>
-			<p>1</p>
-		</div>
-	</div>
-
-	<div id="full-history">
-		<p>{`${numbers.length} / 90`}</p>
-		<ul>
-			{#each Array(90) as _, index}
-				<li class:taken={numbers.indexOf(index + 1) !== -1}>{index + 1}</li>
-			{/each}
-		</ul>
-	</div>
-</div>
 
 <style>
 	#history {
@@ -149,3 +125,26 @@
 		background-color: rgb(0, 0, 0);
 	}
 </style>
+
+
+<div id="history">
+	<div id="short-history">
+		<p id="recent">{takenNumbers.length > 1 ? takenNumbers.slice(-1) : ' '}</p>
+
+		<div id="next">
+			<p>{takenNumbers.length > 1 ? takenNumbers.slice(-2, takenNumbers.length - 1) : ' '}</p>
+			<p>{takenNumbers.length > 2 ? takenNumbers.slice(-3, takenNumbers.length - 2) : ' '}</p>
+			<p>{takenNumbers.length > 3 ? takenNumbers.slice(-4, takenNumbers.length - 3) : ' '}</p>
+			<p>{takenNumbers.length > 4 ? takenNumbers.slice(-5, takenNumbers.length - 4) : ' '}</p>
+		</div>
+	</div>
+
+	<div id="full-history">
+		<p>{`${takenNumbers.length} / 90`}</p>
+		<ul>
+			{#each Array(90) as _, index}
+				<li class:taken={takenNumbers.indexOf(index + 1) !== -1}>{index + 1}</li>
+			{/each}
+		</ul>
+	</div>
+</div>

@@ -2,34 +2,34 @@
   (c) 2022 Gaming With Ghosts
   This code is licensed under MIT license (see LICENSE for details)
 -->
-<script context="module">
-	export const prerender = true;
-</script>
 
 <script>
-	import Header from '@components/Header.svelte';
-	import History from '@components/History.svelte';
-	import Tickets from '@components/Tickets.svelte';
-	import Pool from '@components/Pool.svelte';
+    import { goto } from '$app/navigation';
+    import { moralis } from "$lib/stores.js";
 
-	let historyComponent;
+    function handleConnectWallet() {
+        $moralis.authenticate({ signingMessage: "Connect with PolyBingo" })
+            .then(() => goto('/play'))
+    }
 </script>
 
-<section>
-	<Header />
-	<div id="content">
-		<History bind:this={historyComponent} />
-		<Tickets />
-		<Pool />
-	</div>
-</section>
 
 <style>
-	#content {
-		display: grid;
-		grid-template-columns: 500px 5fr 2fr;
-		column-gap: 45px;
-		padding: 0 45px;
-		margin-block-start: 5px;
-	}
+    #content {
+        display: grid;
+        grid-template-rows: 1fr 100px 100px;
+        justify-items: center;
+        align-items: center;
+        text-align: center;
+    }
 </style>
+
+
+<div id="content">
+    <img src="/logo.png" alt="polybingo logo" />
+    <div>
+        <h1>Welcome to PolyBingo</h1>
+        <p>Connect to Wallet to start playing</p>
+    </div>
+    <button on:click={handleConnectWallet}>Connect Wallet</button>
+</div>

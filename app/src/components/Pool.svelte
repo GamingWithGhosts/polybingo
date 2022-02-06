@@ -5,47 +5,6 @@
 <script>
 </script>
 
-<div id="content">
-	<div id="header">
-		<div id="pool">
-			<div>Price pool</div>
-			<div class="info">
-				<span>100</span>
-				<img alt="" aria-hidden="true" src="matic.svg" />
-			</div>
-		</div>
-		<div id="players">
-			<div>Players</div>
-			<div class="info">
-				<img alt="" aria-hidden="true" src="matic.svg" />
-				<span>50</span>
-			</div>
-		</div>
-	</div>
-	<ul id="prizes">
-		<li>
-			<span>Housie</span>
-			<span>120</span>
-			<img src="matic.svg" alt="matic logo" />
-		</li>
-		<li>
-			<span>Top Line</span>
-			<span>120</span>
-			<img src="matic.svg" alt="matic logo" />
-		</li>
-		<li>
-			<span>Mid Line</span>
-			<span>75</span>
-			<img src="matic.svg" alt="matic logo" />
-		</li>
-		<li>
-			<span>Bottom Line</span>
-			<span>20</span>
-			<img src="matic.svg" alt="matic logo" />
-		</li>
-	</ul>
-</div>
-
 <style>
 	#content {
 		position: sticky;
@@ -115,7 +74,7 @@
 
 	#prizes img {
 		width: 20px;
-		justify-self: flex- end;
+		/* error: justify-self: flex- end;*/
 	}
 
 	#prizes li:first-child span:first-child,
@@ -125,3 +84,44 @@
 		flex-grow: 1;
 	}
 </style>
+
+<div id="content">
+	<div id="header">
+		<div id="pool">
+			<div>Price pool</div>
+			<div class="info">
+				<span>100</span>
+				<img alt="" aria-hidden="true" src="matic.svg" />
+			</div>
+		</div>
+		<div id="players">
+			<div>Players</div>
+			<div class="info">
+				<img alt="" aria-hidden="true" src="matic.svg" />
+				<span>50</span>
+			</div>
+		</div>
+	</div>
+	<ul id="prizes">
+		<li>
+			<span>Housie</span>
+			<span>120</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+		<li>
+			<span>Top Line</span>
+			<span>120</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+		<li>
+			<span>Mid Line</span>
+			<span>75</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+		<li>
+			<span>Bottom Line</span>
+			<span>20</span>
+			<img src="matic.svg" alt="matic logo" />
+		</li>
+	</ul>
+</div>
