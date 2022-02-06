@@ -3,15 +3,12 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	import { GetTicketMatrixFromArray } from '/src/utils/GetTicketMatrixFromArray';
+	import { goto } from '$app/navigation';
 
-	const matrix = GetTicketMatrixFromArray();
-	const tickets = [
-		[...matrix.row1, ...matrix.row2, ...matrix.row3],
-		[...matrix.row1, ...matrix.row2, ...matrix.row3],
-		[...matrix.row1, ...matrix.row2, ...matrix.row3],
-		[...matrix.row1, ...matrix.row2, ...matrix.row3]
-	];
+	import { getTicketMatrixFromArray } from '$lib/utils.js';
+
+	const matrix = getTicketMatrixFromArray();
+	const tickets = [];
 
 	export let takenNumbers = [19, 74];
 	export let selectedNumbers = [];
@@ -23,38 +20,6 @@
 		}
 	}
 </script>
-
-<div id="content">
-	<div id="header">
-		<p>Your Tickets</p>
-	</div>
-	<div id="boards">
-		{#each tickets as ticket, boardIndex}
-			<div class="board-container">
-				<div class="board">
-					<div class="header">
-						<p>#60382</p>
-					</div>
-					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
-						{#each ticket as item}
-							<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
-								<span>{item !== 0 ? item : ''}</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
-				<div class="claim-buttons">
-					<button> Housie</button>
-					<button> Top Line</button>
-
-					<button> Middle Line</button>
-
-					<button>Bottom Line</button>
-				</div>
-			</div>
-		{/each}
-	</div>
-</div>
 
 <style>
 	#content {
@@ -112,6 +77,29 @@
 		flex-grow: 1;
 	}
 
+	#boards #buy-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		margin-block-start: 100px;
+	}
+
+	#boards #buy-container p {
+		font-weight: bold;
+		font-size: 36px;
+		color: gray;
+	}
+
+	#boards #buy-container button {
+		padding: 10px 20px;
+
+		cursor: pointer;
+		font-size: x-large;
+		font-weight: 500;
+		border: none;
+		border-radius: 100px;
+	}
 	#boards .header {
 		display: flex;
 		justify-content: flex-end;
@@ -140,7 +128,7 @@
 
 	.board .numbers .taken span {
 		font-size: 32px;
-		font-weight: 10px;
+		/*font-weight: 10px;*/
 		padding: 5px 10px;
 		border-radius: 45px;
 		text-align: center;
@@ -149,3 +137,41 @@
 		background-color: green;
 	}
 </style>
+
+<div id="content">
+	<div id="header">
+		<p>Your Tickets</p>
+	</div>
+	<div id="boards">
+		{#each tickets as ticket, boardIndex}
+			<div class="board-container">
+				<div class="board">
+					<div class="header">
+						<p>#60382</p>
+					</div>
+					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
+						{#each ticket as item}
+							<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
+								<span>{item !== 0 ? item : ''}</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+				<div class="claim-buttons">
+					<button> Housie</button>
+					<button> Top Line</button>
+
+					<button> Middle Line</button>
+
+					<button>Bottom Line</button>
+				</div>
+			</div>
+		{:else}
+			<div id="buy-container">
+				<p>No tickets available</p>
+				<button on:click={() => goto('/create')}>Create new game</button>
+				<button>Buy ticket</button>
+			</div>
+		{/each}
+	</div>
+</div>

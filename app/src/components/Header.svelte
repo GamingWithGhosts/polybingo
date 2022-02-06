@@ -5,14 +5,13 @@
 <script>
 	import Dropdown from '@components/elements/Dropdown.svelte';
 	import Button from '@components/elements/Button.svelte';
+
+	export let hasButton = true;
+	export let hasMenu = true;
+
+	export let menuLabels;
+	export let buttonLabel;
 </script>
-
-<div id="wrapper">
-	<p>PolyBingo</p>
-
-	<Dropdown />
-	<Button />
-</div>
 
 <style>
 	#wrapper {
@@ -33,3 +32,15 @@
 		flex-grow: 1;
 	}
 </style>
+
+<div id="wrapper">
+	<p>PolyBingo</p>
+
+	{#if (hasMenu)}
+		<Dropdown on:itemSelected labels="{menuLabels}"  />
+	{/if}
+
+	{#if hasButton}
+		<Button on:buttonClick label="{buttonLabel}" />
+	{/if}
+</div>

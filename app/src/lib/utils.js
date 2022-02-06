@@ -1,10 +1,10 @@
 //Author : C19H3R aka CH3CKM473#7035(Discord)
 
 //Note : the arr in parameter is just for sample
-//ALSO : the ticket matrix returend is of type object having properties as 
+//ALSO : the ticket matrix returend is of type object having properties as
 //          Row1,Row2,Row3 each being an array of size 9
 //throws error when ever the arr is not of size 15
-export const GetTicketMatrixFromArray = (arr = [1, 32, 63, 74, 85, 16, 27, 58, 79, 86, 19, 29, 39, 49, 90]) => {
+export const getTicketMatrixFromArray = (arr = [1, 32, 63, 74, 85, 16, 27, 58, 79, 86, 19, 29, 39, 49, 90]) => {
     if (arr.length !== 15) {
         throw "ERROR : invalid Ticket Array Length";
     }
@@ -52,7 +52,7 @@ export const GetTicketMatrixFromArray = (arr = [1, 32, 63, 74, 85, 16, 27, 58, 7
             itr++;
         }
     })
-    
-    
+
+
     return ticketMatrix;
 }
