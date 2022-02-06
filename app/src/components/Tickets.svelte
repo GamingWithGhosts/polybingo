@@ -141,8 +141,7 @@
 			abi: BINGOGAME
 		});
 
-		const hexString = hexMap.toHexString();
-		const bitmap = parseInt(hexString, 16).toString(2);
+		const bitmap = hexMap.toBigInt().toString(2);
 
 		for (let bit = 0; bit < bitmap.length; bit++) {
 			if (bitmap.charAt(bit) === '1') {
