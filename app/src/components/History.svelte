@@ -3,7 +3,7 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	export let takenNumbers = [];
+	export let takenNumbers;
 </script>
 
 

@@ -3,7 +3,55 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
+	import { onMount, onDestroy } from "svelte";
+
+	import { moralis } from "$lib/stores.js";
+
+	import BINGOGAME from "$lib/BingoGame.json";
+
+
+	let pricePool = 0;
+	let isFullClaimed = false, isTopClaimed = false, isMiddleClaimed = false, isBottomClaimed = false;
+
+
+	onMount(async () => {
+		const unsubscribe = $moralis.onWeb3Enabled(async () => {
+			unsubscribe();
+
+			const provider = await $moralis.enableWeb3();
+			const ethers = $moralis.web3Library
+			getPricePool(ethers);
+
+			const gameContract = new ethers.Contract(import.meta.env.CLIENT_GAME_CONTRACT, BINGOGAME, provider);
+			gameContract.on('PrizeClaimed', (claimer, ticketID, prizeType) => {
+				if (prizeType === 3) {
+					isFullClaimed = true;
+				} else if (prizeType === 0) {
+					isTopClaimed = true;
+				} else if (prizeType === 1) {
+					isMiddleClaimed = true;
+				} else if (prizeType === 2) {
+					isBottomClaimed = true;
+				}
+			})
+		})
+	})
+
+	onDestroy(() => {
+		// TODO: unregister contract event
+	})
+
+	async function getPricePool(ethers) {
+		const value = await $moralis.executeFunction({
+			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
+			functionName: 'prizePool',
+			abi: BINGOGAME
+		});
+
+		pricePool = ethers.utils.formatEther(value);
+	}
 </script>
+
 
 <style>
 	#content {
@@ -72,6 +120,10 @@
 		margin-top: 10px;
 	}
 
+	#prizes :global(li.taken) {
+		background-color: #654228;
+	}
+
 	#prizes img {
 		width: 20px;
 		/* error: justify-self: flex- end;*/
@@ -85,12 +137,13 @@
 	}
 </style>
 
+
 <div id="content">
 	<div id="header">
 		<div id="pool">
 			<div>Price pool</div>
 			<div class="info">
-				<span>100</span>
+				<span>{pricePool}</span>
 				<img alt="" aria-hidden="true" src="matic.svg" />
 			</div>
 		</div>
@@ -103,24 +156,24 @@
 		</div>
 	</div>
 	<ul id="prizes">
-		<li>
+		<li class:taken={isFullClaimed}>
 			<span>Housie</span>
-			<span>120</span>
+			<span>{pricePool * 0.36}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
-		<li>
+		<li class:taken={isTopClaimed}>
 			<span>Top Line</span>
-			<span>120</span>
+			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
-		<li>
+		<li class:taken={isMiddleClaimed}>
 			<span>Mid Line</span>
-			<span>75</span>
+			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
-		<li>
+		<li class:taken={isBottomClaimed}>
 			<span>Bottom Line</span>
-			<span>20</span>
+			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
 	</ul>

@@ -18,8 +18,8 @@ export const getTicketMatrixFromArray = (arr = [1, 32, 63, 74, 85, 16, 27, 58, 7
     const topRowElements = arr.slice(0, 5)
     let itr=0
     ticketMatrix.row1.forEach((data, idx) => {
-        const currLowerRange = idx * 10 + 1;
-        const currUpperRange = idx * 10 + 10;
+        const currLowerRange = idx * 10;
+        const currUpperRange = idx * 10 + 9;
         const currNum=topRowElements[itr]
         if (currNum >= currLowerRange && currNum <= currUpperRange&&itr<5) {
             ticketMatrix.row1[idx]=currNum
@@ -31,8 +31,8 @@ export const getTicketMatrixFromArray = (arr = [1, 32, 63, 74, 85, 16, 27, 58, 7
     const MiddleRowElements = arr.slice(5, 10)
      itr=0
     ticketMatrix.row2.forEach((data, idx) => {
-        const currLowerRange = idx * 10 + 1;
-        const currUpperRange = idx * 10 + 10;
+        const currLowerRange = idx * 10  ;
+        const currUpperRange = idx * 10 + 9;
         const currNum=MiddleRowElements[itr]
         if (currNum >= currLowerRange && currNum <= currUpperRange&&itr<5) {
             ticketMatrix.row2[idx]=currNum
@@ -44,8 +44,8 @@ export const getTicketMatrixFromArray = (arr = [1, 32, 63, 74, 85, 16, 27, 58, 7
     const LastRowElements = arr.slice(10, 15)
     itr = 0;
     ticketMatrix.row3.forEach((data, idx) => {
-        const currLowerRange = idx * 10 + 1;
-        const currUpperRange = idx * 10 + 10;
+        const currLowerRange = idx * 10;
+        const currUpperRange = idx * 10 + 9;
         const currNum=LastRowElements[itr]
         if (currNum >= currLowerRange && currNum <= currUpperRange&&itr<5) {
             ticketMatrix.row3[idx]=currNum
