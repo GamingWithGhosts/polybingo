@@ -3,7 +3,7 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 
 	import { moralis } from "$lib/stores.js";
 
@@ -35,6 +35,10 @@
 				}
 			})
 		})
+	})
+
+	onDestroy(() => {
+		// TODO: unregister contract event
 	})
 
 	async function getPricePool(ethers) {
