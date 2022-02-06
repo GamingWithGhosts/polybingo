@@ -3,21 +3,101 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
-	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	import { getTicketMatrixFromArray } from '$lib/utils.js';
+	import { moralis } from "$lib/stores.js";
 
-	const matrix = getTicketMatrixFromArray();
-	const tickets = [];
+	import BingoGame from '$lib/BingoGame.json';
+	import BINGOTICKETS from '$lib/BingoTickets.json';
 
-	export let takenNumbers = [19, 74];
+	export let takenNumbers = [];
 	export let selectedNumbers = [];
+
+
+	let tickets = [];
+
+
+	onMount(async () => {
+		await $moralis.enableWeb3();
+
+		findTickets();
+	})
 
 	function handleNumberClick(event) {
 		const selected = Number?.parseInt(event.target.innerText);
 		if (takenNumbers.indexOf(selected) >= 0) {
 			selectedNumbers = [...selectedNumbers, selected];
 		}
+	}
+
+	async function handleBuyTicket() {
+		const chainId = await $moralis.chainId;
+		if (chainId !== 80001) {
+			await $moralis.switchNetwork(chainId);
+		}
+
+		const options = {
+			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
+			functionName: "buyTicket",
+			abi: BingoGame,
+			msgValue: $moralis.Units.ETH("0.1")
+		};
+
+		const transaction = await $moralis.executeFunction(options);
+		const receipt = await transaction.wait();
+		console.log(transaction, receipt)
+	}
+
+	async function findTickets() {
+		tickets = [];
+
+		$moralis.executeFunction({
+			contractAddress: import.meta.env.CLIENT_TICKETS_CONTRACT,
+			functionName: "getAllTicketIDs",
+			abi: BINGOTICKETS,
+			params: {
+				owner: $moralis.User.current().get('ethAddress')
+			}
+		})
+			.then((ticketIds) => {
+				let cards = [];
+
+				ticketIds.forEach(async (id) => {
+					const card = await $moralis.executeFunction({
+						contractAddress: import.meta.env.CLIENT_TICKETS_CONTRACT,
+						functionName: "ticketIDToTicket",
+						abi: BINGOTICKETS,
+						params: {
+							"": id
+						}
+					});
+
+					setTicketsFromCard(card)
+				});
+
+				return cards;
+			})
+			.catch(error => {
+				console.log(error)
+			});
+	}
+
+	function setTicketsFromCard(card) {
+		let numbersArray = [];
+		let hexString = card.toString(16);
+
+		console.log(card, hexString, parseInt(hexString, 16))
+
+		for (let index = 2; index < hexString.length; index += 2) {
+			const hex = hexString.charAt(index) + hexString.charAt(index + 1);
+			numbersArray.push(parseInt("0x" + hex, 16));
+		}
+
+		const matrix = getTicketMatrixFromArray(numbersArray);
+		tickets = [...tickets, [...matrix.row1, ...matrix.row2, ...matrix.row3]];
+
+		console.log(tickets)
 	}
 </script>
 
@@ -147,7 +227,6 @@
 			<div class="board-container">
 				<div class="board">
 					<div class="header">
-						<p>#60382</p>
 					</div>
 					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
 						{#each ticket as item}
@@ -169,8 +248,9 @@
 		{:else}
 			<div id="buy-container">
 				<p>No tickets available</p>
-				<button on:click={() => goto('/create')}>Create new game</button>
-				<button>Buy ticket</button>
+<!--				<button on:click={() => goto('/create')}>Create new game</button>-->
+				<button on:click={findTickets}>NFTs</button>
+				<button on:click={handleBuyTicket}>Buy ticket</button>
 			</div>
 		{/each}
 	</div>
