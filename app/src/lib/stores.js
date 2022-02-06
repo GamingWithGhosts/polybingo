@@ -15,5 +15,7 @@ export const moralis = readable(null, (set) => {
             serverUrl: import.meta.env.CLIENT_MORALIS_SERVER_URL,
             appId: import.meta.env.CLIENT_MORALIS_APP_ID
         })
+
+        Moralis.enableWeb3();
     }
 })

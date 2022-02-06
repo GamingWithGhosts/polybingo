@@ -17,13 +17,14 @@
 
 	let tickets = [];
 
+	onMount(() => {
+		const unsubscribe = $moralis.onWeb3Enabled(async () => {
+			unsubscribe();
 
-	onMount(async () => {
-		await $moralis.enableWeb3();
-
-		await findTickets();
-		await getNumberHistory();
-		listenForNumberStream();
+			await findTickets();
+			await getNumberHistory();
+			await listenForNumberStream();
+		});
 	})
 
 	function handleNumberClick(event) {

@@ -3,7 +3,36 @@
   This code is licensed under MIT license (see LICENSE for details)
 -->
 <script>
+	import { onMount } from "svelte";
+
+	import { moralis } from "$lib/stores.js";
+
+	import BINGOGAME from "$lib/BingoGame.json";
+
+
+	let pricePool = 0;
+
+
+	onMount(async () => {
+		const unsubscribe = $moralis.onWeb3Enabled(() => {
+			unsubscribe();
+
+			const ethers = $moralis.web3Library
+			getPricePool(ethers);
+		})
+	})
+
+	async function getPricePool(ethers) {
+		const value = await $moralis.executeFunction({
+			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
+			functionName: 'prizePool',
+			abi: BINGOGAME
+		});
+
+		pricePool = ethers.utils.formatEther(value);
+	}
 </script>
+
 
 <style>
 	#content {
@@ -85,12 +114,13 @@
 	}
 </style>
 
+
 <div id="content">
 	<div id="header">
 		<div id="pool">
 			<div>Price pool</div>
 			<div class="info">
-				<span>100</span>
+				<span>{pricePool}</span>
 				<img alt="" aria-hidden="true" src="matic.svg" />
 			</div>
 		</div>
@@ -105,22 +135,22 @@
 	<ul id="prizes">
 		<li>
 			<span>Housie</span>
-			<span>120</span>
+			<span>{pricePool * 0.36}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
 		<li>
 			<span>Top Line</span>
-			<span>120</span>
+			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
 		<li>
 			<span>Mid Line</span>
-			<span>75</span>
+			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
 		<li>
 			<span>Bottom Line</span>
-			<span>20</span>
+			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
 	</ul>
