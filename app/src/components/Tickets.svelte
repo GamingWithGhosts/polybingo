@@ -16,6 +16,11 @@
 
 
 	let tickets = [];
+	let isFullHouse = false, isFullClaimed = false;
+	let isTopLine = false, isTopClaimed = false;
+	let isMiddleLine = false, isMiddleClaimed = false;
+	let isBottomLine = false, isBottomClaimed = false;
+
 
 	onMount(() => {
 		const unsubscribe = $moralis.onWeb3Enabled(async () => {
@@ -31,6 +36,19 @@
 		const selected = Number?.parseInt(event.target.innerText);
 		if (takenNumbers.indexOf(selected) >= 0) {
 			selectedNumbers = [...selectedNumbers, selected];
+		}
+
+		const row1Found = tickets[0].row1.filter(x => selectedNumbers.indexOf(x) !== -1);
+		const row2Found = tickets[0].row2.filter(x => selectedNumbers.indexOf(x) !== -1);
+		const row3Found = tickets[0].row3.filter(x => selectedNumbers.indexOf(x) !== -1);
+		if (row1Found.length === 5 && row2Found.length === 5 && row3Found.length === 5) {
+			isFullHouse = true;
+		} else if (row1Found.length === 5) {
+			isTopLine = true;
+		} else if (row2Found.length === 5) {
+			isMiddleLine = true;
+		} else if (row3Found.length === 5) {
+			isBottomLine = true;
 		}
 	}
 
@@ -88,6 +106,20 @@
 			});
 	}
 
+	async function handleClaimPrize(type) {
+		const isClaimed = await $moralis.executeFunction({
+			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
+			functionName:'claimPrize',
+			abi: BINGOGAME,
+			params: {
+				ticketID: 3,
+				prizeType: type
+			}
+		})
+
+		// TODO: Handle if prize is claimed
+	}
+
 	function setTicketsFromCard(card) {
 		let numbersArray = [];
 		let hexString = card.toString(16);
@@ -98,7 +130,8 @@
 		}
 
 		const matrix = getTicketMatrixFromArray(numbersArray);
-		tickets = [...tickets, [...matrix.row1, ...matrix.row2, ...matrix.row3]];
+		tickets.push(matrix);
+		tickets = tickets;
 	}
 
 	async function getNumberHistory() {
@@ -117,8 +150,6 @@
 			}
 
 			takenNumbers = takenNumbers;
-
-			console.log(takenNumbers)
 		}
 	}
 
@@ -132,6 +163,7 @@
 		})
 	}
 </script>
+
 
 <style>
 	#content {
@@ -183,6 +215,9 @@
 		background-color: #677969;
 		color: gold;
 		cursor: pointer;
+	}
+	#boards .claim-buttons > button:disabled {
+		color: #675710;
 	}
 	#boards .board {
 		margin-block-start: 15px;
@@ -250,6 +285,7 @@
 	}
 </style>
 
+
 <div id="content">
 	<div id="header">
 		<p>Your Tickets</p>
@@ -261,20 +297,37 @@
 					<div class="header">
 					</div>
 					<ul class="numbers" on:click={handleNumberClick} data-boardid={boardIndex}>
-						{#each ticket as item}
-							<li class:hasNumber={item !== 0} class:taken={selectedNumbers.indexOf(item) >= 0}>
-								<span>{item !== 0 ? item : ''}</span>
-							</li>
+						{#each Object.entries(ticket) as [key, value]}
+							{#each value as item}
+								<li
+										class:hasNumber={item !== 0}
+										class:taken={selectedNumbers.indexOf(item) >= 0}
+										data-row="{key}"
+								>
+									<span>{item !== 0 ? item : ''}</span>
+								</li>
+							{/each}
 						{/each}
 					</ul>
 				</div>
 				<div class="claim-buttons">
-					<button> Housie</button>
-					<button> Top Line</button>
-
-					<button> Middle Line</button>
-
-					<button>Bottom Line</button>
+					<button
+							on:click={() => handleClaimPrize('WHOLE_CARD')}
+							data-ticketId="">
+						Housie
+					</button>
+					<button
+							on:click={() => handleClaimPrize('ROW_0')}>
+						Top Line
+					</button>
+					<button
+							on:click={() => handleClaimPrize('ROW_1')}>
+						Middle Line
+					</button>
+					<button
+							on:click={() => handleClaimPrize('ROW_2')}>
+						Bottom Line
+					</button>
 				</div>
 			</div>
 		{:else}

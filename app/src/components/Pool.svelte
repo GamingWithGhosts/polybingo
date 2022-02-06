@@ -11,14 +11,29 @@
 
 
 	let pricePool = 0;
+	let isFullClaimed = false, isTopClaimed = false, isMiddleClaimed = false, isBottomClaimed = false;
 
 
 	onMount(async () => {
-		const unsubscribe = $moralis.onWeb3Enabled(() => {
+		const unsubscribe = $moralis.onWeb3Enabled(async () => {
 			unsubscribe();
 
+			const provider = await $moralis.enableWeb3();
 			const ethers = $moralis.web3Library
 			getPricePool(ethers);
+
+			const gameContract = new ethers.Contract(import.meta.env.CLIENT_GAME_CONTRACT, BINGOGAME, provider);
+			gameContract.on('PrizeClaimed', (claimer, ticketID, prizeType) => {
+				if (prizeType === 'WHOLE_CARD') {
+					isFullClaimed = true;
+				} else if (prizeType === 'ROW_0') {
+					isTopClaimed = true;
+				} else if (prizeType === 'ROW_1') {
+					isMIddleClaimed = true;
+				} else if (prizeType === 'ROW_2') {
+					isBottomClaimed = true;
+				}
+			})
 		})
 	})
 
@@ -101,6 +116,10 @@
 		margin-top: 10px;
 	}
 
+	#prizes :global(li.taken) {
+		background-color: #654228;
+	}
+
 	#prizes img {
 		width: 20px;
 		/* error: justify-self: flex- end;*/
@@ -133,22 +152,22 @@
 		</div>
 	</div>
 	<ul id="prizes">
-		<li>
+		<li class:taken={isFullClaimed}>
 			<span>Housie</span>
 			<span>{pricePool * 0.36}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
-		<li>
+		<li class:taken={isTopClaimed}>
 			<span>Top Line</span>
 			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
-		<li>
+		<li class:taken={isMiddleClaimed}>
 			<span>Mid Line</span>
 			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
 		</li>
-		<li>
+		<li class:taken={isBottomClaimed}>
 			<span>Bottom Line</span>
 			<span>{pricePool * 0.18}</span>
 			<img src="matic.svg" alt="matic logo" />
