@@ -8,10 +8,10 @@
 	import { getTicketMatrixFromArray } from '$lib/utils.js';
 	import { moralis } from "$lib/stores.js";
 
-	import BingoGame from '$lib/BingoGame.json';
+	import BINGOGAME from '$lib/BingoGame.json';
 	import BINGOTICKETS from '$lib/BingoTickets.json';
 
-	export let takenNumbers = [];
+	export let takenNumbers;
 	export let selectedNumbers = [];
 
 
@@ -21,7 +21,9 @@
 	onMount(async () => {
 		await $moralis.enableWeb3();
 
-		findTickets();
+		await findTickets();
+		await getNumberHistory();
+		listenForNumberStream();
 	})
 
 	function handleNumberClick(event) {
@@ -40,7 +42,7 @@
 		const options = {
 			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
 			functionName: "buyTicket",
-			abi: BingoGame,
+			abi: BINGOGAME,
 			msgValue: $moralis.Units.ETH("0.1")
 		};
 
@@ -73,7 +75,7 @@
 						}
 					});
 
-					setTicketsFromCard(card)
+					setTicketsFromCard(card);
 				});
 
 				return cards;
@@ -87,8 +89,6 @@
 		let numbersArray = [];
 		let hexString = card.toString(16);
 
-		console.log(card, hexString, parseInt(hexString, 16))
-
 		for (let index = 2; index < hexString.length; index += 2) {
 			const hex = hexString.charAt(index) + hexString.charAt(index + 1);
 			numbersArray.push(parseInt("0x" + hex, 16));
@@ -96,8 +96,37 @@
 
 		const matrix = getTicketMatrixFromArray(numbersArray);
 		tickets = [...tickets, [...matrix.row1, ...matrix.row2, ...matrix.row3]];
+	}
 
-		console.log(tickets)
+	async function getNumberHistory() {
+		const hexMap = await $moralis.executeFunction({
+			contractAddress: import.meta.env.CLIENT_GAME_CONTRACT,
+			functionName: "drawnNumbersBitmap",
+			abi: BINGOGAME
+		});
+
+		const hexString = hexMap.toHexString();
+		const bitmap = parseInt(hexString, 16).toString(2);
+
+		for (let bit = 0; bit < bitmap.length; bit++) {
+			if (bitmap.charAt(bit) === '1') {
+				takenNumbers.push(bit);
+			}
+
+			takenNumbers = takenNumbers;
+
+			console.log(takenNumbers)
+		}
+	}
+
+	async function listenForNumberStream() {
+		const provider = await $moralis.enableWeb3();
+		const ethers = $moralis.web3Library
+
+		const gameContract = new ethers.Contract(import.meta.env.CLIENT_GAME_CONTRACT, BINGOGAME, provider);
+		gameContract.on('NewNumberDrawn', (number) => {
+			takenNumbers = [...takenNumbers, number]
+		})
 	}
 </script>
 
