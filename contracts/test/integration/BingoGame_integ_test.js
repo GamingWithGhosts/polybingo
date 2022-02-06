@@ -26,7 +26,7 @@ skip.if(developmentChains.includes(network.name)).
             'minSecondsBetweenSteps': 30,
             'ipfsDirectoryURI': "ipns://k51qzi5uqu5djuxna2e4m5lkszmgj8z7bojvsin778i36nx3j0amujp8nj3z6z"
         });
-        await new Promise(resolve => setTimeout(resolve, 30000))
+        await new Promise(resolve => setTimeout(resolve, 7000))
 
         allGames = await bingoGameFactory.getAllGames();
       }
@@ -44,20 +44,21 @@ skip.if(developmentChains.includes(network.name)).
       );
     });
 
+    xit('Just run', async () => {
+    });
+
+    xit('Buy ticket', async () => {
+      console.log("Buying ticket")
+      await bingoGame.buyTicket({
+        value: ethers.utils.parseEther("0.1")
+      });
+
+      //wait 30 secs for oracle to callback
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      console.log("Finshed buying");
+    });
 
     it('Should successfully make an external API request and get a result', async () => {
-      let buyTicket = false;
-      if (buyTicket) {
-        console.log("Buying ticket")
-        await bingoGame.buyTicket({
-          value: ethers.utils.parseEther("0.1")
-        });
-
-        //wait 30 secs for oracle to callback
-        await new Promise(resolve => setTimeout(resolve, 30000));
-        console.log("Finshed buying");
-      }
-
       const unfulfilled = await bingoTickets.unfulfilledRequestCount();
       const ticket = await bingoTickets.ticketIDToTicket(1);
       const uri = await bingoTickets.tokenURI(1);

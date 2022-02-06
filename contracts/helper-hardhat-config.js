@@ -1,19 +1,17 @@
 const networkConfig = {
     default: {
         name: 'hardhat',
+        fee: '100000000000000',
         keyHash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4',
         jobId: '29fa9aa13bf1468788b7cc4a500a45b8',
-        vrfFee: '100000000000000',
-        apiFee: '100000000000000',
         fundAmount: "1000000000000000000",
         keepersUpdateInterval: "30"
     },
     31337: {
         name: 'localhost',
+        fee: '100000000000000',
         keyHash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4',
         jobId: '29fa9aa13bf1468788b7cc4a500a45b8',
-        vrfFee: '100000000000000',
-        apiFee: '100000000000000',
         fundAmount: "1000000000000000000",
         keepersUpdateInterval: "30"
     },
@@ -26,10 +24,9 @@ const networkConfig = {
         // oracle: '0x0bDDCD124709aCBf9BB3F824EbC61C87019888bb',
         // jobId: 'c6a006e4f4844754a6524445acde84a0',
         // LinkRiver
-        oracle: '0xb33D8A4e62236eA91F3a8fD7ab15A95B9B7eEc7D',
-        jobId: '92bc82fdc9824a71a2721cb5f00b8e35',
-        vrfFee: '100000000000000000',
-        apiFee: '100000000000000000',
+        oracle: '0xc8D925525CA8759812d0c299B90247917d4d4b7C',
+        jobId: 'a7330d0b4b964c05abc66a26307047c0',
+        fee: '100000000000000000',
         fundAmount: "1000000000000000000",
         keepersUpdateInterval: "30"
     },
@@ -40,8 +37,7 @@ const networkConfig = {
         vrfCoordinator: '0x3d2341ADb2D31f1c5530cDC622016af293177AE0',
         oracle: '0x0a31078cd57d23bf9e8e8f1ba78356ca2090569e',
         jobId: '12b86114fa9e46bab3ca436f88e1a912',
-        vrfFee: '100000000000000',
-        apiFee: '100000000000000',
+        fee: '100000000000000',
         fundAmount: "100000000000000"
     },
 }
