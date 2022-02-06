@@ -27,18 +27,19 @@ module.exports = async ({
   }
   const apiJobId = ethers.utils.toUtf8Bytes(networkConfig[chainId]['jobId']);
   const vrfKeyHash = networkConfig[chainId]['keyHash'];
-  const fee = networkConfig[chainId]['fee'];
+  const apiFee = networkConfig[chainId]['apiFee'];
+  const vrfFee = networkConfig[chainId]['vrfFee'];
   const networkName = networkConfig[chainId]['name'];
 
   const randomnessOracleSettings = {
     'oracle': vrfOracleAddress,
     'keyHash': vrfKeyHash,
-    'fee': fee
+    'fee': vrfFee
   };
   const apiOracleSettings = {
     'oracle': apiOracleAddress,
     'jobID': apiJobId,
-    'fee': fee
+    'fee': apiFee
   };
 
   const bingoGameDeployer = await deploy('BingoGameDeployer', {

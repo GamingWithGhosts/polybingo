@@ -2,8 +2,6 @@
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 import { BingoTickets } from "./BingoTickets.sol";
 import { GameStructs } from "./GameStructs.sol";

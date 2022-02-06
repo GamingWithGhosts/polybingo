@@ -69,7 +69,7 @@ contract BingoTickets is ERC721, ChainlinkClient {
 
         return string(
             abi.encodePacked(
-                _baseURI(),"/",symbol(),"/",Strings.toString(tokenId),".json" // TODO - verifty if the right path
+                _baseURI(),"/",symbol(),"/",Strings.toString(tokenId),".json"
             )
         );
     }

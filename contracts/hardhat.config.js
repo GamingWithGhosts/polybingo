@@ -4,18 +4,19 @@
 require("@appliedblockchain/chainlink-plugins-fund-link")
 require("@nomiclabs/hardhat-waffle")
 require("@nomiclabs/hardhat-ethers")
+require("@nomiclabs/hardhat-etherscan")
 require("@nomiclabs/hardhat-truffle5")
 require('hardhat-contract-sizer');
 require("hardhat-deploy")
 require("hardhat-gas-reporter")
 require("solidity-coverage")
-
 require('dotenv').config()
 
 const POLYGON_TESTNET_MUMBAI_RPC_URL = process.env.POLYGON_TESTNET_MUMBAI_RPC_URL || "https://matic-mumbai.chainstacklabs.com/"
 const POLYGON_MAINNET_RPC_URL = process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-mainnet.alchemyapi.io/v2/your-api-key"
 // optional
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "your private key"
+const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "some api key"
 
 module.exports = {
     defaultNetwork: "hardhat",
@@ -36,6 +37,9 @@ module.exports = {
             accounts: [PRIVATE_KEY],
             saveDeployments: true,
         },
+    },
+    etherscan: {
+        apiKey: POLYGONSCAN_API_KEY
     },
     gasReporter: {
         enabled: process.env.REPORT_GAS !== undefined,
