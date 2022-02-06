@@ -50,13 +50,14 @@
 <div id="wrapper">
 	<p>PolyBingo</p>
 
+	<!-- 
 	{#if (hasMenu)}
 		<Dropdown on:itemSelected labels="{menuLabels}"  />
 	{/if}
 
 	{#if hasButton}
 		<Button on:buttonClick label="{buttonLabel}" />
-	{/if}
+	{/if} -->
 	<div id="current-username">
 	<img src={"https://avatars.dicebear.com/api/identicon/"+userAddress+".svg"} width="48" alt=" account identicon ">
 	<span >{userAddress.slice(0,10)+"..."}</span>
